@@ -1,70 +1,114 @@
 package ui;
 
-import main.Manager;
+import mgr.Manager;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
 import java.awt.*;
-import java.util.ArrayList;
-
-//TODO proper ui.UI alignment
-//TODO file chooser
+import java.io.File;
 
 public class SelectorUI
-    extends UI
 {
-    private JPanel panel;
-
-    private boolean created;
-
     private Manager mgr;
+
+    private JFrame frame;
 
     public SelectorUI(Manager mgr)
     {
         this.mgr = mgr;
-
-        SwingUtilities.invokeLater(() -> createUI());
     }
 
-    private synchronized void createUI()
+    public void create()
     {
-        panel = new JPanel();
-        panel.setLayout(new GridLayout(3, 2));
+        SwingUtilities.invokeLater(()->{
+            JPanel panel = new JPanel();
+            panel.setLayout(new GridLayout(3, 3));
 
-        JLabel inlabel = new JLabel("Source");
-        panel.add(inlabel);
+            panel.add(new JLabel("Input"));
 
-        JTextField in = new JTextField();
-        in.setEnabled(true);
-        panel.add(in);
+            JTextField in = new JTextField();
+            in.setEnabled(true);
+            panel.add(in);
 
-        JLabel outLabel = new JLabel("Destination");
-        panel.add(outLabel);
+            JButton selectIn = new JButton("...");
+            selectIn.addActionListener(e->{
+                JFileChooser jfc = new JFileChooser();
+                jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                jfc.setFileFilter(new FileFilter() {
+                    @Override
+                    public boolean accept(File f) {
+                        return f.isDirectory();
+                    }
 
-        JTextField out = new JTextField();
-        panel.add(out);
+                    @Override
+                    public String getDescription() {
+                        return "dir";
+                    }
+                });
+                jfc.setAcceptAllFileFilterUsed(false);
+                jfc.setVisible(true);
 
-        JButton start = new JButton("Start");
-        panel.add(start);
-        start.addActionListener(e -> new SwingWorker<Void, Void>(){
-            @Override
-            protected Void doInBackground() throws Exception {
-                mgr.newCopyProcess(in.getText(), out.getText(), new ArrayList<>());
+                if(jfc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
+                    in.setText(jfc.getSelectedFile().getAbsolutePath());
+            });
+            panel.add(selectIn);
 
-                return null;
-            }
-        }.execute());
+            panel.add(new JLabel("Output"));
 
-        created = true;
-        notify();
+            JTextField out = new JTextField();
+            panel.add(out);
+
+            JButton selectOut = new JButton("...");
+            selectOut.addActionListener(e->{
+                JFileChooser jfc = new JFileChooser();
+                jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                jfc.setFileFilter(new FileFilter() {
+                    @Override
+                    public boolean accept(File f) {
+                        return f.isDirectory();
+                    }
+
+                    @Override
+                    public String getDescription() {
+                        return "dir";
+                    }
+                });
+                jfc.setAcceptAllFileFilterUsed(false);
+                jfc.setVisible(true);
+
+                if(jfc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
+                    out.setText(jfc.getSelectedFile().getAbsolutePath());
+            });
+            panel.add(selectOut);
+
+            JButton start = new JButton("Start");
+            start.addActionListener(e->{
+                mgr.newCopy(in.getText(), out.getText());
+                hide();
+            });
+            panel.add(start);
+
+            frame = new JFrame("Backup");
+            frame.setContentPane(panel);
+            frame.pack();
+            frame.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+            frame.setVisible(true);
+        });
     }
 
-    public synchronized JPanel getPanel()
+    public void dispose()
     {
-        if(!created)
-            try {
-                wait();
-            }catch (InterruptedException ignored){}
+        frame.setVisible(false);
+        frame.dispose();
+    }
 
-        return panel;
+    public void show()
+    {
+        frame.setVisible(true);
+    }
+
+    public void hide()
+    {
+        frame.setVisible(false);
     }
 }

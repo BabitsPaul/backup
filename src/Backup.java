@@ -1,4 +1,4 @@
-package main;
+import mgr.Manager;
 
 public class Backup
 {
