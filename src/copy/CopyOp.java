@@ -1,21 +1,32 @@
 package copy;
 
 import javax.swing.*;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
-import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
 public class CopyOp
 {
+    private static final int BUFFER_SIZE = 4096;
+    private static final int FLUSHING_STEP = 5000;
+
     private CopyState state;
 
     private CopyManager manager;
 
     private Thread t;
+
+    private final byte[] buffer = new byte[BUFFER_SIZE];
+
+    //abortion
+    private volatile boolean keepRunning = true;
+
+    //pausing
+    private volatile boolean paused = false;
+
+    private final Object pausingLock = new Object();
 
     public CopyOp(CopyManager manager, CopyState state)
     {
@@ -36,17 +47,22 @@ public class CopyOp
 
     public void abort()
     {
-
+        keepRunning = false;
     }
 
     public void pauseProcess()
     {
-
+        paused = true;
     }
 
     public void continueProcess()
     {
+        paused = false;
 
+        synchronized (pausingLock)
+        {
+            pausingLock.notify();
+        }
     }
 
     private void copy()
@@ -70,7 +86,7 @@ public class CopyOp
         String in = state.getFileIn(),
                 out = state.getFileOut();
 
-        while(!fileQueue.isEmpty())
+        while(!fileQueue.isEmpty() && keepRunning)
         {
             File f = fileQueue.poll();
 
@@ -98,10 +114,13 @@ public class CopyOp
         }
 
         //notify the manager about completion of the code
-        manager.processComplete(true);
+        manager.processComplete(keepRunning);
 
         //just a bit of cleanup
-        t = null;
+        if(keepRunning)
+            t = null;
+        else
+            cleanupOnAbort();   //TODO probably alternative of keeping created files nevertheless the process was aborted
     }
 
     private void cleanupOnAbort()
@@ -114,8 +133,46 @@ public class CopyOp
                                         "ERROR", JOptionPane.ERROR_MESSAGE);
     }
 
+    private void checkPausedState()
+    {
+        if(paused)
+        {
+            try{
+                synchronized (pausingLock)
+                {
+                    pausingLock.wait();
+                }
+            }catch (InterruptedException ignored){}
+        }
+    }
+
     private void copyFile(File in, File out)
     {
+        state.setCurrentFile(in);
 
+        try(BufferedInputStream bis = new BufferedInputStream(new FileInputStream(in));
+            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(out)))
+        {
+            int index, count = 0;
+            while((index = bis.read(buffer)) > 0 && keepRunning)
+            {
+                bos.write(buffer, 0, index);
+
+                //only flush every FLUSHING_STEP loop
+                if((++count % FLUSHING_STEP) == 0)
+                {
+                    bos.flush();
+                    checkPausedState();
+                }
+
+                state.currentFileProgress(index);
+            }
+
+            //final flush to make sure the entire file was flushed
+            bos.flush();
+        }catch (IOException e)
+        {
+            //TODO report error
+        }
     }
 }
