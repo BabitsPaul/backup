@@ -78,14 +78,12 @@ public class SysTray
         trayIcon = null;
     }
 
-    public TrayModule newModule(String in, String out)
+    public void newTrayModule(TrayModule m)
     {
-        TrayModule module = new TrayModule(this, in, out);
+        m.setTray(this);
 
-        copyOperations.add(module);
+        copyOperations.add(m);
         copyOperations.setEnabled(true);
-
-        return module;
     }
 
     public void removeModule(TrayModule module)

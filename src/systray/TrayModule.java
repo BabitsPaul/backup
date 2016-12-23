@@ -17,11 +17,11 @@ public class TrayModule
 
     private boolean paused = false;
 
-    public TrayModule(SysTray tray, String in, String out)
+    public TrayModule(CopyManager mgr, String in, String out)
     {
         super(suffix(in, SUFFIX_DISPLAY_LENGTH) + "->" + suffix(out, SUFFIX_DISPLAY_LENGTH));
 
-        this.tray = tray;
+        this.manager = mgr;
 
         pc = new MenuItem("Pause");
         pc.setEnabled(true);
@@ -39,22 +39,16 @@ public class TrayModule
 
         MenuItem showUI = new MenuItem("Show");
         add(showUI);
-        showUI.addActionListener(e->{
-            manager.showUI();
-        });
+        showUI.addActionListener(e-> manager.showUI());
 
         MenuItem dispose = new MenuItem("Dispose");
         add(dispose);
-        dispose.addActionListener(e->{
-            dispose();
-
-            manager.dispose();
-        });
+        dispose.addActionListener(e-> manager.dispose());
     }
 
-    public void setManager(CopyManager manager)
+    public void setTray(SysTray tray)
     {
-        this.manager = manager;
+        this.tray = tray;
     }
 
     public void updatePaused()

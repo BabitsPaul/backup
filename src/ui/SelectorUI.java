@@ -83,8 +83,16 @@ public class SelectorUI
 
             JButton start = new JButton("Start");
             start.addActionListener(e->{
+                String inputFile = in.getText();
+
+                if(!new File(inputFile).exists())
+                {
+                    JOptionPane.showMessageDialog(null, "Input-file doesn't exist: " + inputFile,
+                            "ERROR", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
                 mgr.newCopy(in.getText(), out.getText());
-                hide();
             });
             panel.add(start);
 

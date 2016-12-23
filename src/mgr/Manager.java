@@ -2,10 +2,10 @@ package mgr;
 
 import copy.CopyManager;
 import systray.SysTray;
-import systray.TrayModule;
 import ui.SelectorUI;
 
 import javax.swing.*;
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -39,6 +39,14 @@ public class Manager
 
     public void shutdown()
     {
+        if(managers.size() != 0)
+        {
+            if(JOptionPane.showOptionDialog(null, "There are running-backup processes", "Warning",
+                    JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null,
+                    new Object[]{"Abort Backup", "Cancel"}, "Cancel") == 1)
+                return;
+        }
+
         //release all running backup processes, uis and the system tray
         managers.forEach(CopyManager::dispose);
         tray.dispose();
@@ -47,13 +55,15 @@ public class Manager
 
     public void newCopy(String in, String out)
     {
-        TrayModule module = tray.newModule(in, out);
-        CopyManager manager = new CopyManager();
+        selectorUI.hide();
 
-        module.setManager(manager);
+        CopyManager manager = new CopyManager(this, in, out);
+        managers.add(manager);
+
+        tray.newTrayModule(manager.getTrayModule());
     }
 
-    public void disposeCopy(CopyManager manager)
+    public void managerDisposed(CopyManager manager)
     {
         managers.remove(manager);
     }
