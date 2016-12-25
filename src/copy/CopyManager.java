@@ -12,26 +12,33 @@ public class CopyManager
 
     private TrayModule module;
 
+    private Precomputer precomputer;
+
     private CopyState state;
 
     private CopyUI ui;
 
     private CopyOp op;
 
+    private boolean running = true;
+
     public CopyManager(Manager manager, String in, String out)
     {
         //TODO strip eventual trailing slashes
+
         this.in = in;
         this.out = out;
         this.manager = manager;
-        this.module = new TrayModule(this, in, out);
 
+        module = new TrayModule(this, in, out);
         state = new CopyState(in, out);
+        precomputer = new Precomputer(state);
         ui = new CopyUI(this, state);
         op = new CopyOp(this, state);
 
         ui.createUI();
         op.start();
+        precomputer.start();
     }
 
     public void pauseProcess()
@@ -50,6 +57,7 @@ public class CopyManager
 
     public void abortProcess()
     {
+        precomputer.abort();
         op.abort();
         ui.backupComplete(false);
         module.updateCompleted();
@@ -57,10 +65,11 @@ public class CopyManager
 
     public void dispose()
     {
+        if(running)
+            abortProcess();
+
         ui.disposeUI();
         module.dispose();
-
-        manager.managerDisposed(this);
     }
 
     public void showUI()
@@ -78,5 +87,9 @@ public class CopyManager
         //copyop is already closed
         ui.backupComplete(normalTermination);
         module.updateCompleted();
+
+        manager.managerDisposed(this);
+
+        running = false;
     }
 }

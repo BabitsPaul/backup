@@ -127,6 +127,7 @@ public class CopyOp
     {
         t = null;
 
+        //TODO alternate cleanup method (e.g. remove all copied files, if existent)
         File out = new File(state.getFileOut());
         if(out.exists() && !out.delete())
                 JOptionPane.showMessageDialog(null, "Failed to delete output directory",

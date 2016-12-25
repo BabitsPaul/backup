@@ -9,11 +9,13 @@ public class CopyState {
     private long currentFileProgress;
     private long currentFileLength;
 
-    private int fileCount = 0;
+    private int totalFileProgress = 0;
     private int totalFiles;
 
     private long totalBytes;
     private long totalBytesProgress = 0l;
+
+    private boolean precomputationComplete = false;
 
     public CopyState(String fileIn, String fileOut)
     {
@@ -33,7 +35,7 @@ public class CopyState {
         this.currentFile = currentFile;
         currentFileLength = currentFile.length();
         currentFileProgress = 0l;
-        fileCount++;
+        totalFileProgress++;
     }
 
     public File getCurrentFile() {
@@ -52,5 +54,33 @@ public class CopyState {
     {
         currentFileProgress += progress;
         totalBytesProgress += progress;
+    }
+
+    //precomputation
+    public void precomputationComplete(int totalFiles, long totalBytes) {
+        this.totalFiles = totalFiles;
+        this.totalBytes = totalBytes;
+
+        precomputationComplete = true;
+    }
+
+    public boolean isPrecomputationComplete() {
+        return precomputationComplete;
+    }
+
+    public int getTotalFiles() {
+        return totalFiles;
+    }
+
+    public long getTotalBytes() {
+        return totalBytes;
+    }
+
+    public long getTotalBytesProgress() {
+        return totalBytesProgress;
+    }
+
+    public int getTotalFileProgress() {
+        return totalFileProgress;
     }
 }
