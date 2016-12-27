@@ -16,6 +16,8 @@ public class CopyOp
 
     private CopyManager manager;
 
+    private CopyLog log;
+
     private Thread t;
 
     private final byte[] buffer = new byte[BUFFER_SIZE];
@@ -28,10 +30,11 @@ public class CopyOp
 
     private final Object pausingLock = new Object();
 
-    public CopyOp(CopyManager manager, CopyState state)
+    public CopyOp(CopyManager manager, CopyState state, CopyLog log)
     {
         this.manager = manager;
         this.state = state;
+        this.log = log;
     }
 
     public void start()
@@ -94,20 +97,21 @@ public class CopyOp
 
             if(f.isDirectory())
             {
-                if(!peer.exists())
-                    if(!peer.mkdir())
-                    {
-                        //TODO report error while creating file
-                        continue;
-                    }
+                if(!peer.exists() && !peer.mkdir())
+                {
+                    log.reportCopyError("Failed to create backup directory", f.getAbsolutePath());
+                    continue;
+                }
 
                 for(File child : f.listFiles())
                     fileQueue.offer(child);
             }
             else
             {
-                if(peer.lastModified() > f.lastModified())
+                if(peer.lastModified() > f.lastModified()) {
+                    log.reportFileUptoDate(f);
                     continue;   //ignore files that are older than their backup version
+                }
                 else
                     copyFile(f, peer);
             }
@@ -120,14 +124,14 @@ public class CopyOp
         if(keepRunning)
             t = null;
         else
-            cleanupOnAbort();   //TODO probably alternative of keeping created files nevertheless the process was aborted
+            cleanupOnAbort();
     }
 
     private void cleanupOnAbort()
     {
         t = null;
 
-        //TODO alternate cleanup method (e.g. remove all copied files, if existent)
+        //TODO alternate cleanup method (e.g. remove all copied files, if existent) or leave choice to user
         File out = new File(state.getFileOut());
         if(out.exists() && !out.delete())
                 JOptionPane.showMessageDialog(null, "Failed to delete output directory",
@@ -151,18 +155,18 @@ public class CopyOp
     {
         state.setCurrentFile(in);
 
-        try(BufferedInputStream bis = new BufferedInputStream(new FileInputStream(in));
-            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(out)))
+        try(FileInputStream fis = new FileInputStream(in);
+            FileOutputStream fos = new FileOutputStream(out))
         {
             int index, count = 0;
-            while((index = bis.read(buffer)) > 0 && keepRunning)
+            while((index = fis.read(buffer)) > 0 && keepRunning)
             {
-                bos.write(buffer, 0, index);
+                fos.write(buffer, 0, index);
 
                 //only flush every FLUSHING_STEP loop
                 if((++count % FLUSHING_STEP) == 0)
                 {
-                    bos.flush();
+                    fos.flush();
                     checkPausedState();
                 }
 
@@ -170,10 +174,10 @@ public class CopyOp
             }
 
             //final flush to make sure the entire file was flushed
-            bos.flush();
+            fos.flush();
         }catch (IOException e)
         {
-            //TODO report error
+            log.reportCopyError(e.getMessage(), in.getAbsolutePath());
         }
     }
 }

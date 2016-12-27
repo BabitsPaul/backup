@@ -20,6 +20,8 @@ public class CopyManager
 
     private CopyOp op;
 
+    private CopyLog log;
+
     private boolean running = true;
 
     public CopyManager(Manager manager, String in, String out)
@@ -30,11 +32,12 @@ public class CopyManager
         this.out = out;
         this.manager = manager;
 
+        log = new CopyLog();
         module = new TrayModule(this, in, out);
         state = new CopyState(in, out);
         precomputer = new Precomputer(state);
         ui = new CopyUI(this, state);
-        op = new CopyOp(this, state);
+        op = new CopyOp(this, state, log);
 
         ui.createUI();
         op.start();
