@@ -1,7 +1,8 @@
-package ui;
+package ui.copy;
 
 import copy.CopyManager;
 import copy.CopyState;
+import ui.WindowManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -10,17 +11,19 @@ public class CopyUI
 {
     private static final int UPDATE = 17;
 
+    private LogUI logUI;
+
     private CopyManager mgr;
 
     private CopyState state;
 
     private JFrame frame;
 
-    //updateables
+    //updatables
 
-    private UpdateableLabel totalFilesLabel, currentFileLabel, totalBytesLabel;
+    private UpdatableLabel totalFilesLabel, currentFileLabel, totalBytesLabel;
 
-    private UpdateableProgressBar totalFilesBar, currentFileBar, totalBytesBar;
+    private UpdatableProgressBar totalFilesBar, currentFileBar, totalBytesBar;
 
     private PercentProgress totalFilesProgress, currentFileProgress, totalBytesProgress;
 
@@ -31,14 +34,20 @@ public class CopyUI
 
     private JButton cancel;
 
+    private JButton log;
+
     private boolean paused = false;
 
     private JButton dispose;
 
-    public CopyUI(CopyManager mgr, CopyState state)
+    private WindowManager windowManager;
+
+    public CopyUI(CopyManager mgr, CopyState state, WindowManager manager)
     {
         this.mgr = mgr;
         this.state = state;
+        this.windowManager = manager;
+        logUI = new LogUI(state, mgr.getLog(), manager);
     }
 
     public void createUI()
@@ -53,11 +62,11 @@ public class CopyUI
             panel.add(new JLabel(state.getFileOut()));
 
             //files
-            totalFilesLabel = new UpdateableLabel(()->state.isPrecomputationComplete(), "%d/%d files",
+            totalFilesLabel = new UpdatableLabel(()->state.isPrecomputationComplete(), "%d/%d files",
                     ()->state.getTotalFileProgress(), ()->state.getTotalFiles());
             panel.add(totalFilesLabel);
 
-            totalFilesBar = new UpdateableProgressBar(()->state.isPrecomputationComplete(), ()->state.getTotalFileProgress(),
+            totalFilesBar = new UpdatableProgressBar(()->state.isPrecomputationComplete(), ()->state.getTotalFileProgress(),
                     ()->state.getTotalFiles());
             panel.add(totalFilesBar);
 
@@ -66,11 +75,11 @@ public class CopyUI
             panel.add(totalFilesProgress);
 
             //bytes
-            totalBytesLabel = new UpdateableLabel(()->state.isPrecomputationComplete(), "%d/%d bytes",
+            totalBytesLabel = new UpdatableLabel(()->state.isPrecomputationComplete(), "%d/%d bytes",
                     ()->state.getTotalBytesProgress(), ()->state.getTotalBytes());
             panel.add(totalBytesLabel);
 
-            totalBytesBar = new UpdateableProgressBar(()->state.isPrecomputationComplete(), ()->state.getTotalBytesProgress(),
+            totalBytesBar = new UpdatableProgressBar(()->state.isPrecomputationComplete(), ()->state.getTotalBytesProgress(),
                     ()->state.getTotalBytes());
             panel.add(totalBytesBar);
 
@@ -79,10 +88,10 @@ public class CopyUI
             panel.add(totalBytesProgress);
 
             //current file
-            currentFileLabel = new UpdateableLabel(()->true, "%s", ()->state.getCurrentFile());
+            currentFileLabel = new UpdatableLabel(()->true, "%s", ()->state.getCurrentFile());
             panel.add(currentFileLabel);
 
-            currentFileBar = new UpdateableProgressBar(()->true, ()->state.getCurrentFileProgress(), ()->state.getCurrentFileLength());
+            currentFileBar = new UpdatableProgressBar(()->true, ()->state.getCurrentFileProgress(), ()->state.getCurrentFileLength());
             panel.add(currentFileBar);
 
             currentFileProgress = new PercentProgress(()->true, ()->state.getCurrentFileProgress(), ()->state.getCurrentFileLength());
@@ -107,10 +116,13 @@ public class CopyUI
             dispose.setEnabled(false);
             panel.add(dispose);
 
-            //TODO logging functionality???
+            log = new JButton("Show log");
+            log.addActionListener(e->logUI.showUI());
+            log.setEnabled(false);
+            panel.add(log);
 
             //main frame
-            frame = new JFrame(state.getFileIn() + " --> " + state.getFileOut());
+            frame = windowManager.requestFrame(state.getFileIn() + " --> " + state.getFileOut());
             frame.setContentPane(panel);
             frame.pack();
             frame.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
@@ -148,6 +160,8 @@ public class CopyUI
 
             frame.setVisible(false);
             frame.dispose();
+
+            logUI.dispose();
         });
     }
 
@@ -180,12 +194,22 @@ public class CopyUI
 
     public void backupComplete(boolean normalTermination)
     {
+        //TODO totalFilesCopied gets updated on uptodate files!!!
+
+        //TODO on completion of the precomputer update again
+
         SwingUtilities.invokeLater(()->{
+            //set progressbars appropriately
+            currentFileBar.setDone();
+            totalBytesBar.setDone();
+            totalFilesBar.setDone();
+
             t.stop();
 
             cancel.setEnabled(false);
             pc.setEnabled(false);
             dispose.setEnabled(true);
+            log.setEnabled(true);
 
             frame.getGlassPane().add(new PopupMenu(normalTermination ? "Complete" : "Aborted"));
         });

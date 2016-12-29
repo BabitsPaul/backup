@@ -3,9 +3,9 @@ package mgr;
 import copy.CopyManager;
 import systray.SysTray;
 import ui.SelectorUI;
+import ui.WindowManager;
 
 import javax.swing.*;
-import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -17,12 +17,16 @@ public class Manager
 
     private Set<CopyManager> managers;
 
+    private WindowManager windowManager;
+
     public Manager()
     {
 
     }
 
     public void setup() {
+        windowManager = new WindowManager(this::allWindowsClosed);
+
         managers = new HashSet<>();
 
         tray = new SysTray(this);
@@ -33,8 +37,16 @@ public class Manager
             return;
         }
 
-        selectorUI = new SelectorUI(this);
+        selectorUI = new SelectorUI(this, windowManager);
         selectorUI.create();
+    }
+
+    public void allWindowsClosed()
+    {
+        if(!managers.isEmpty())
+            return;
+
+        shutdown();
     }
 
     public void shutdown()
@@ -57,7 +69,7 @@ public class Manager
     {
         selectorUI.hide();
 
-        CopyManager manager = new CopyManager(this, in, out);
+        CopyManager manager = new CopyManager(this, in, out, windowManager);
         managers.add(manager);
 
         tray.newTrayModule(manager.getTrayModule());

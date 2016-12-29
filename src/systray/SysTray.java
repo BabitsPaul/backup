@@ -1,7 +1,6 @@
 package systray;
 
 import mgr.Manager;
-import ui.SelectorUI;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -66,7 +65,7 @@ public class SysTray
 
         supported = true;
 
-        return supported;
+        return true;
     }
 
     public void dispose()

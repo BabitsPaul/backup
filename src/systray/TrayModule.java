@@ -19,7 +19,7 @@ public class TrayModule
 
     public TrayModule(CopyManager mgr, String in, String out)
     {
-        super(suffix(in, SUFFIX_DISPLAY_LENGTH) + "->" + suffix(out, SUFFIX_DISPLAY_LENGTH));
+        super(suffix(in) + "->" + suffix(out));
 
         this.manager = mgr;
 
@@ -77,11 +77,11 @@ public class TrayModule
         tray.removeModule(this);
     }
 
-    private static String suffix(String s, int len)
+    private static String suffix(String s)
     {
-        if(len > s.length())
+        if(TrayModule.SUFFIX_DISPLAY_LENGTH > s.length())
             return s;
         else
-            return "..." + s.substring(s.length() - len);
+            return "..." + s.substring(s.length() - TrayModule.SUFFIX_DISPLAY_LENGTH);
     }
 }

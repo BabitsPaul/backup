@@ -1,4 +1,4 @@
-package ui;
+package ui.copy;
 
 import javax.swing.*;
 import java.text.DecimalFormat;

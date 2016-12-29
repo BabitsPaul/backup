@@ -25,7 +25,7 @@ public class Precomputer
     private void precompute()
     {
         int totalFiles = 0;
-        long totalBytes = 0l;
+        long totalBytes = 0L;
 
         int prefixLen = state.getFileIn().length();
         String outPrefix = state.getFileOut() + "/";

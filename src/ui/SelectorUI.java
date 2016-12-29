@@ -13,9 +13,12 @@ public class SelectorUI
 
     private JFrame frame;
 
-    public SelectorUI(Manager mgr)
+    private WindowManager windowManager;
+
+    public SelectorUI(Manager mgr, WindowManager windowManager)
     {
         this.mgr = mgr;
+        this.windowManager = windowManager;
     }
 
     public void create()
@@ -96,7 +99,7 @@ public class SelectorUI
             });
             panel.add(start);
 
-            frame = new JFrame("Backup");
+            frame = windowManager.requestFrame("Backup");
             frame.setContentPane(panel);
             frame.pack();
             frame.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);

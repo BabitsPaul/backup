@@ -9,6 +9,8 @@ import java.util.Queue;
 
 public class CopyOp
 {
+    //TODO timing
+
     private static final int BUFFER_SIZE = 4096;
     private static final int FLUSHING_STEP = 5000;
 
@@ -79,63 +81,55 @@ public class CopyOp
                     "ERROR", JOptionPane.ERROR_MESSAGE);
 
             manager.processComplete(false);
-            cleanupOnAbort();
+            t = null;
             return;
         }
 
-        Queue<File> fileQueue = new PriorityQueue<>();
-        fileQueue.offer(new File(state.getFileIn()));
+        try {
+            Queue<File> fileQueue = new PriorityQueue<>();
+            fileQueue.offer(new File(state.getFileIn()));
 
-        String in = state.getFileIn(),
-                out = state.getFileOut();
+            String in = state.getFileIn(),
+                    out = state.getFileOut();
 
-        while(!fileQueue.isEmpty() && keepRunning)
-        {
-            File f = fileQueue.poll();
-
-            File peer = new File(out + "/" + f.getAbsolutePath().substring(in.length()));
-
-            if(f.isDirectory())
+            while(!fileQueue.isEmpty() && keepRunning)
             {
-                if(!peer.exists() && !peer.mkdir())
+                File f = fileQueue.poll();
+
+                File peer = new File(out + "/" + f.getAbsolutePath().substring(in.length()));
+
+                if(f.isDirectory())
                 {
-                    log.reportCopyError("Failed to create backup directory", f.getAbsolutePath());
-                    continue;
-                }
+                    if(!peer.exists() && !peer.mkdir())
+                    {
+                        log.reportCopyError("Failed to create backup directory", f.getAbsolutePath());
+                        continue;
+                    }
 
-                for(File child : f.listFiles())
-                    fileQueue.offer(child);
-            }
-            else
-            {
-                if(peer.lastModified() > f.lastModified()) {
-                    log.reportFileUptoDate(f);
-                    continue;   //ignore files that are older than their backup version
+                    for(File child : f.listFiles())
+                        fileQueue.offer(child);
                 }
                 else
-                    copyFile(f, peer);
+                {
+                    //ignore files that are older than their backup version
+                    if(peer.lastModified() > f.lastModified()) {
+                        log.reportFileUptoDate(f);
+                    }
+                    else
+                        copyFile(f, peer);
+                }
             }
+        }catch (Exception e) {
+            log.reportUnknownException(e);
+
+            keepRunning = false;
         }
 
         //notify the manager about completion of the code
         manager.processComplete(keepRunning);
 
         //just a bit of cleanup
-        if(keepRunning)
-            t = null;
-        else
-            cleanupOnAbort();
-    }
-
-    private void cleanupOnAbort()
-    {
         t = null;
-
-        //TODO alternate cleanup method (e.g. remove all copied files, if existent) or leave choice to user
-        File out = new File(state.getFileOut());
-        if(out.exists() && !out.delete())
-                JOptionPane.showMessageDialog(null, "Failed to delete output directory",
-                                        "ERROR", JOptionPane.ERROR_MESSAGE);
     }
 
     private void checkPausedState()

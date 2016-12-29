@@ -2,19 +2,16 @@ package copy;
 
 import mgr.Manager;
 import systray.TrayModule;
-import ui.CopyUI;
+import ui.WindowManager;
+import ui.copy.CopyUI;
 
 public class CopyManager
 {
-    private String in, out;
-
     private Manager manager;
 
     private TrayModule module;
 
     private Precomputer precomputer;
-
-    private CopyState state;
 
     private CopyUI ui;
 
@@ -24,20 +21,32 @@ public class CopyManager
 
     private boolean running = true;
 
-    public CopyManager(Manager manager, String in, String out)
-    {
-        //TODO strip eventual trailing slashes
+    //clean up
+    private boolean hardCleanup = false;    //TODO setter???
 
-        this.in = in;
-        this.out = out;
+    private CleanupHelper cleanupHelper;
+
+    public CopyManager(Manager manager, String in, String out, WindowManager windowManager)
+    {
+        //strip trailing slashes
+        while (in.endsWith("/"))
+            in = in.substring(0, in.length() - 1);
+
+        while (out.endsWith("/"))
+            out = out.substring(0, out.length() - 1);
+
         this.manager = manager;
 
+        CopyState state = new CopyState(in, out);
+
         log = new CopyLog();
+        cleanupHelper = new CleanupHelper(in, out, log);
         module = new TrayModule(this, in, out);
-        state = new CopyState(in, out);
         precomputer = new Precomputer(state);
-        ui = new CopyUI(this, state);
+        ui = new CopyUI(this, state, windowManager);
         op = new CopyOp(this, state, log);
+
+        cleanupHelper.onStart();
 
         ui.createUI();
         op.start();
@@ -87,6 +96,8 @@ public class CopyManager
 
     public void processComplete(boolean normalTermination)
     {
+        cleanupHelper.onTermination();
+
         //copyop is already closed
         ui.backupComplete(normalTermination);
         module.updateCompleted();
@@ -94,5 +105,12 @@ public class CopyManager
         manager.managerDisposed(this);
 
         running = false;
+
+        if(!normalTermination && hardCleanup)
+            cleanupHelper.cleanUp();
+    }
+
+    public CopyLog getLog() {
+        return log;
     }
 }

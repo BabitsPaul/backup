@@ -1,10 +1,10 @@
-package ui;
+package ui.copy;
 
 import javax.swing.*;
 import java.util.function.BooleanSupplier;
 import java.util.function.LongSupplier;
 
-public class UpdateableProgressBar
+public class UpdatableProgressBar
     extends JProgressBar
 {
     private static final int RESOLUTION = 10000;
@@ -13,7 +13,7 @@ public class UpdateableProgressBar
     
     private BooleanSupplier updateCondition;
     
-    public UpdateableProgressBar(BooleanSupplier updateCondition, LongSupplier current, LongSupplier max)
+    public UpdatableProgressBar(BooleanSupplier updateCondition, LongSupplier current, LongSupplier max)
     {
         super(0, RESOLUTION);
         super.setBorderPainted(true);
@@ -31,5 +31,10 @@ public class UpdateableProgressBar
             super.setIndeterminate(false);
             super.setValue((int) (((double) current.getAsLong()) / max.getAsLong() * RESOLUTION));
         }
+    }
+
+    public void setDone() {
+        setValue(RESOLUTION);
+        setIndeterminate(false);
     }
 }

@@ -1,11 +1,12 @@
-package ui;
+package ui.copy;
 
 import javax.swing.*;
 import java.util.Arrays;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
-public class UpdateableLabel
+@SuppressWarnings("Convert2MethodRef")
+public class UpdatableLabel
     extends JLabel
 {
     private static final String DEFAULT_CONTENT = "Calculating...";
@@ -16,7 +17,7 @@ public class UpdateableLabel
 
     private String formatString;
 
-    public UpdateableLabel(BooleanSupplier updateCondition, String formatString, Supplier<?>... suppliers)
+    public UpdatableLabel(BooleanSupplier updateCondition, String formatString, Supplier<?>... suppliers)
     {
         this.formatString = formatString;
         this.suppliers = suppliers;
@@ -31,6 +32,6 @@ public class UpdateableLabel
     public void update()
     {
         if(updateCondition.getAsBoolean())
-            setText(String.format(formatString, Arrays.stream(suppliers).map(s->s.get()).toArray()));
+            setText(String.format(formatString, Arrays.stream(suppliers).map(Supplier::get).toArray()));
     }
 }

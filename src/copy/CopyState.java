@@ -13,7 +13,7 @@ public class CopyState {
     private int totalFiles;
 
     private long totalBytes;
-    private long totalBytesProgress = 0l;
+    private long totalBytesProgress = 0L;
 
     private boolean precomputationComplete = false;
 
@@ -34,7 +34,7 @@ public class CopyState {
     public void setCurrentFile(File currentFile) {
         this.currentFile = currentFile;
         currentFileLength = currentFile.length();
-        currentFileProgress = 0l;
+        currentFileProgress = 0L;
         totalFileProgress++;
     }
 
