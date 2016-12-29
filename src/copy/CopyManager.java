@@ -9,6 +9,8 @@ import javax.swing.*;
 
 public class CopyManager
 {
+    //TODO task listeners and tasks implementations
+
     private Manager manager;
 
     private TrayModule module;
@@ -48,6 +50,10 @@ public class CopyManager
         ui = new CopyUI(this, state, windowManager);
         op = new CopyOp(this, state, log);
 
+        module.createTaskListener(op);
+        ui.createCopyOPTaskListener(op);
+        ui.createPrecomputationTaskListener(precomputer);
+
         cleanupHelper.onStart();
 
         ui.createUI();
@@ -58,15 +64,11 @@ public class CopyManager
     public void pauseProcess()
     {
         op.pauseProcess();
-        ui.pauseBackup();
-        module.updatePaused();
     }
 
     public void continueProcess()
     {
         op.continueProcess();
-        ui.continueBackup();
-        module.updateContinue();
     }
 
     public void abortProcess()
@@ -78,8 +80,6 @@ public class CopyManager
 
         precomputer.abort();
         op.abort();
-        ui.backupComplete(false);
-        module.updateCompleted();
 
         if(JOptionPane.showOptionDialog(null, "Remove already backedup files?", "Cleanup",
                 JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null,
@@ -109,10 +109,6 @@ public class CopyManager
     public void processComplete(boolean normalTermination)
     {
         cleanupHelper.onTermination();
-
-        //copyop is already closed
-        ui.backupComplete(normalTermination);
-        module.updateCompleted();
 
         manager.managerDisposed(this);
 

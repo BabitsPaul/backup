@@ -1,6 +1,9 @@
 package systray;
 
 import copy.CopyManager;
+import copy.task.Task;
+import copy.task.TaskEventID;
+import copy.task.TaskListener;
 
 import java.awt.*;
 
@@ -46,12 +49,12 @@ public class TrayModule
         dispose.addActionListener(e-> manager.dispose());
     }
 
-    public void setTray(SysTray tray)
+    void setTray(SysTray tray)
     {
         this.tray = tray;
     }
 
-    public void updatePaused()
+    private void updatePaused()
     {
         pc.setLabel("Continue");
         paused = true;
@@ -60,13 +63,13 @@ public class TrayModule
     /**
      * called when the copyprocess continues its work
      */
-    public void updateContinue()
+    private void updateContinue()
     {
         pc.setLabel("Pause");
         paused = false;
     }
 
-    public void updateCompleted()
+    private void updateCompleted()
     {
         pc.setLabel("\t");
         pc.setEnabled(false);
@@ -83,5 +86,13 @@ public class TrayModule
             return s;
         else
             return "..." + s.substring(s.length() - TrayModule.SUFFIX_DISPLAY_LENGTH);
+    }
+
+    public void createTaskListener(Task copyop)
+    {
+        copyop.addTaskListener(e -> updatePaused(), TaskEventID.TASK_PAUSED);
+        copyop.addTaskListener(e -> updateContinue(), TaskEventID.TASK_CONTINUED);
+        copyop.addTaskListener(e -> updateCompleted(), TaskEventID.TASK_COMPLETED);
+        copyop.addTaskListener(e -> updateCompleted(), TaskEventID.TASK_ABORTED);
     }
 }

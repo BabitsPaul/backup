@@ -50,6 +50,8 @@ public class CopyOp
         t.setName("Backup");
         t.setPriority(Thread.MAX_PRIORITY); //run this with maximum-priority
         t.start();
+
+        fireEvent(TaskEventID.TASK_STARTED);
     }
 
     public void abort()
@@ -62,6 +64,8 @@ public class CopyOp
     public void pauseProcess()
     {
         paused = true;
+
+        fireEvent(TaskEventID.TASK_PAUSED);
     }
 
     public void continueProcess()
@@ -72,6 +76,8 @@ public class CopyOp
         {
             pausingLock.notify();
         }
+
+        fireEvent(TaskEventID.TASK_CONTINUED);
     }
 
     private void copy()
@@ -86,6 +92,9 @@ public class CopyOp
 
             manager.processComplete(false);
             t = null;
+
+            fireEvent(TaskEventID.TASK_ABORTED);
+
             return;
         }
 
@@ -134,6 +143,9 @@ public class CopyOp
 
         //just a bit of cleanup
         t = null;
+
+        if(keepRunning)
+            fireEvent(TaskEventID.TASK_COMPLETED);
     }
 
     private void checkPausedState()

@@ -1,10 +1,14 @@
 package copy;
 
+import copy.task.Task;
+import copy.task.TaskEventID;
+
 import java.io.File;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
 public class Precomputer
+    extends Task
 {
     private CopyState state;
 
@@ -24,6 +28,8 @@ public class Precomputer
 
     private void precompute()
     {
+        fireEvent(TaskEventID.TASK_STARTED);
+
         int totalFiles = 0;
         long totalBytes = 0L;
 
@@ -51,6 +57,11 @@ public class Precomputer
         }
 
         state.precomputationComplete(totalFiles, totalBytes);
+
+        if(keepRunning)
+            fireEvent(TaskEventID.TASK_COMPLETED);
+        else
+            fireEvent(TaskEventID.TASK_ABORTED);
     }
 
     public void abort()
