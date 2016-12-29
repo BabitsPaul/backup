@@ -1,7 +1,6 @@
 package mgr;
 
 import copy.CopyManager;
-import copy.task.TaskEventQueue;
 import systray.SysTray;
 import ui.SelectorUI;
 import ui.WindowManager;
@@ -26,8 +25,6 @@ public class Manager
     }
 
     public void setup() {
-        TaskEventQueue.start();
-
         windowManager = new WindowManager(this::allWindowsClosed);
 
         managers = new HashSet<>();
@@ -66,8 +63,6 @@ public class Manager
         managers.forEach(CopyManager::dispose);
         tray.dispose();
         selectorUI.dispose();
-
-        TaskEventQueue.stop();
     }
 
     public void newCopy(String in, String out)
