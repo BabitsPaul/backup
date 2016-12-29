@@ -1,5 +1,6 @@
 package copy;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -11,6 +12,8 @@ import java.util.List;
 
 public class CleanupHelper
 {
+    private List<File> toKeep;
+
     private File[] toDelete;
 
     private String in, out;
@@ -22,6 +25,8 @@ public class CleanupHelper
         this.in = in;
         this.out = out;
         this.copyLog = copyLog;
+
+        toKeep = new LinkedList<>();
     }
 
     public void onStart()
@@ -39,6 +44,23 @@ public class CleanupHelper
         if(toDelete != null)
         {
             this.toDelete = new File[]{toDelete};
+        }else{
+            //create record of files that shouldn't be deleted
+            try{
+                Iterator<Path> iter = Files.newDirectoryStream(FileSystems.getDefault().getPath(this.in)).iterator();
+                List<String> files = new LinkedList<>();
+                while(iter.hasNext())
+                    files.add(iter.next().toFile().getAbsolutePath().substring(in.length()));
+
+                iter = Files.newDirectoryStream(FileSystems.getDefault().getPath(this.out)).iterator();
+                while(iter.hasNext())
+                    files.remove(iter.next().toFile().getAbsolutePath().substring(this.out.length()));
+
+                files.forEach(p->toKeep.add(new File(out + "/" + p)));
+            }catch (IOException e)
+            {
+                copyLog.reportUnknownException(e);
+            }
         }
     }
 
@@ -59,7 +81,11 @@ public class CleanupHelper
             while(iter.hasNext())
                 files.remove(iter.next().toFile().getAbsolutePath().substring(out.length()));
 
-            toDelete = files.stream().map(s->out + s).map(File::new).toArray(File[]::new);
+            toDelete = files.stream().
+                            map(s->out + s).
+                            map(File::new).
+                            filter(f->!toKeep.contains(f)).
+                            toArray(File[]::new);
         }catch (IOException e)
         {
             copyLog.reportUnknownException(e);
@@ -70,7 +96,7 @@ public class CleanupHelper
     {
         if(toDelete == null)
         {
-            //TODO report error
+            JOptionPane.showMessageDialog(null, "Can't cleanup files");
             return;
         }
 

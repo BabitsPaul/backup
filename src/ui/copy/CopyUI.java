@@ -194,10 +194,6 @@ public class CopyUI
 
     public void backupComplete(boolean normalTermination)
     {
-        //TODO totalFilesCopied gets updated on uptodate files!!!
-
-        //TODO on completion of the precomputer update again
-
         SwingUtilities.invokeLater(()->{
             //set progressbars appropriately
             currentFileBar.setDone();
@@ -211,7 +207,8 @@ public class CopyUI
             dispose.setEnabled(true);
             log.setEnabled(true);
 
-            frame.getGlassPane().add(new PopupMenu(normalTermination ? "Complete" : "Aborted"));
+            //TODO report
+            //frame.getGlassPane().add(new PopupMenu(normalTermination ? "Complete" : "Aborted"));
         });
     }
 }

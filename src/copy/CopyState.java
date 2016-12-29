@@ -2,7 +2,8 @@ package copy;
 
 import java.io.File;
 
-public class CopyState {
+public class CopyState
+{
     private String fileIn, fileOut;
 
     private File currentFile;

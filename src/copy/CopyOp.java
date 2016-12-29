@@ -1,5 +1,8 @@
 package copy;
 
+import copy.task.Task;
+import copy.task.TaskEventID;
+
 import javax.swing.*;
 import java.io.*;
 import java.nio.file.FileSystems;
@@ -8,9 +11,8 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 
 public class CopyOp
+    extends Task
 {
-    //TODO timing
-
     private static final int BUFFER_SIZE = 4096;
     private static final int FLUSHING_STEP = 5000;
 
@@ -53,6 +55,8 @@ public class CopyOp
     public void abort()
     {
         keepRunning = false;
+
+        fireEvent(TaskEventID.TASK_ABORTED);
     }
 
     public void pauseProcess()

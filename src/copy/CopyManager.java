@@ -5,6 +5,8 @@ import systray.TrayModule;
 import ui.WindowManager;
 import ui.copy.CopyUI;
 
+import javax.swing.*;
+
 public class CopyManager
 {
     private Manager manager;
@@ -22,7 +24,7 @@ public class CopyManager
     private boolean running = true;
 
     //clean up
-    private boolean hardCleanup = false;    //TODO setter???
+    private boolean hardCleanup = false;
 
     private CleanupHelper cleanupHelper;
 
@@ -69,10 +71,20 @@ public class CopyManager
 
     public void abortProcess()
     {
+        if(JOptionPane.showOptionDialog(null, "Abort process?", "Abort",
+                JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null,
+                new String[]{"Abort process", "Cancel"}, "Cancel") == 1)
+            return;
+
         precomputer.abort();
         op.abort();
         ui.backupComplete(false);
         module.updateCompleted();
+
+        if(JOptionPane.showOptionDialog(null, "Remove already backedup files?", "Cleanup",
+                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null,
+                new String[]{"Cleanup", "Keep changes"}, "Keep changes") == 0)
+            cleanup();
     }
 
     public void dispose()
@@ -112,5 +124,16 @@ public class CopyManager
 
     public CopyLog getLog() {
         return log;
+    }
+
+    public void cleanup()
+    {
+        hardCleanup = true;
+
+        //wait for the process to terminate
+        if(running)
+            return;
+
+        cleanupHelper.cleanUp();
     }
 }
