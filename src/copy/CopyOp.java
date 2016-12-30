@@ -51,6 +51,9 @@ public class CopyOp
     public void abort()
     {
         keepRunning = false;
+
+        //wake up thread in case it's paused
+        continueProcess();
     }
 
     public void pauseProcess()
@@ -68,6 +71,7 @@ public class CopyOp
         }
     }
 
+    @SuppressWarnings("ConstantConditions")
     private void copy()
     {
         try {
@@ -78,7 +82,7 @@ public class CopyOp
             JOptionPane.showMessageDialog(null, "Failed to create directory " + state.getFileOut(),
                     "ERROR", JOptionPane.ERROR_MESSAGE);
 
-            manager.processComplete(false);
+            manager.backupComplete();
             t = null;
             return;
         }
@@ -124,7 +128,7 @@ public class CopyOp
         }
 
         //notify the manager about completion of the code
-        manager.processComplete(keepRunning);
+        manager.backupComplete();
 
         //just a bit of cleanup
         t = null;

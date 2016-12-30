@@ -28,4 +28,9 @@ public class PercentProgress
         if(updateCondition.getAsBoolean())
             setText(format.format((double) current.getAsLong() / max.getAsLong() * 100) + "%");
     }
+
+    public void setErrorState() {
+        updateCondition = ()->false;
+        setText("Error");
+    }
 }

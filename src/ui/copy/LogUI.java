@@ -12,7 +12,8 @@ public class LogUI
 {
     private WindowManager windowManager;
 
-    private boolean created = false;
+    private boolean creationRunning = false,
+                        created = false;
 
     private CopyLog log;
 
@@ -29,7 +30,12 @@ public class LogUI
 
     private void createUI()
     {
+        if(created || creationRunning)
+            return;
+
         Thread t = new Thread(()->{
+            creationRunning = true;
+
             String lf = System.getProperty("line.separator");
 
             StringBuilder total = new StringBuilder();
@@ -84,9 +90,12 @@ public class LogUI
                 frame = windowManager.requestFrame("Log");
                 frame.setContentPane(tabbedPane);
                 frame.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+                frame.setSize(400, 500);
+                frame.setLocationRelativeTo(null);
                 frame.setVisible(true);
 
                 created = true;
+                creationRunning = false;
             });
         });
         t.setName("LogUI Builder");
@@ -95,9 +104,10 @@ public class LogUI
 
     public void showUI()
     {
+        //create only one screen and asure a frame is created before showing it
         if(!created)
             createUI();
-        else
+        else if(!creationRunning)
             frame.setVisible(true);
     }
 

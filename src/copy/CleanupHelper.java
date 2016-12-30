@@ -38,7 +38,7 @@ public class CleanupHelper
         while(out != null && !out.exists())
         {
             toDelete = out;
-            out.getParent();
+            out = out.getParentFile();
         }
 
         if(toDelete != null)
@@ -47,6 +47,7 @@ public class CleanupHelper
         }else{
             //create record of files that shouldn't be deleted
             try{
+                //TODO recursive deletion of files that were already there
                 Iterator<Path> iter = Files.newDirectoryStream(FileSystems.getDefault().getPath(this.in)).iterator();
                 List<String> files = new LinkedList<>();
                 while(iter.hasNext())
@@ -56,7 +57,7 @@ public class CleanupHelper
                 while(iter.hasNext())
                     files.remove(iter.next().toFile().getAbsolutePath().substring(this.out.length()));
 
-                files.forEach(p->toKeep.add(new File(out + "/" + p)));
+                files.forEach(p->toKeep.add(new File(this.out + "/" + p)));
             }catch (IOException e)
             {
                 copyLog.reportUnknownException(e);
@@ -101,7 +102,23 @@ public class CleanupHelper
         }
 
         for(File f : toDelete)
-            if(!f.delete())
-                copyLog.reportCopyError("Failed to delete", f.getAbsolutePath());
+            cleanUpRecursive(f);
+    }
+
+    private void cleanUpRecursive(File f)
+    {
+        if(f.isDirectory())
+        {
+            for(File child : f.listFiles())
+                cleanUpRecursive(child);
+        }
+
+        try {
+            Files.delete(FileSystems.getDefault().getPath(f.getAbsolutePath()));
+        }catch (IOException e)
+        {
+            copyLog.reportCopyError("Failed to delete", f.getAbsolutePath());
+            copyLog.reportUnknownException(e);
+        }
     }
 }

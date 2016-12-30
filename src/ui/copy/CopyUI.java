@@ -1,5 +1,6 @@
 package ui.copy;
 
+import copy.CopyLog;
 import copy.CopyManager;
 import copy.CopyState;
 import ui.WindowManager;
@@ -42,12 +43,12 @@ public class CopyUI
 
     private WindowManager windowManager;
 
-    public CopyUI(CopyManager mgr, CopyState state, WindowManager manager)
+    public CopyUI(CopyManager mgr, CopyState state, WindowManager manager, CopyLog log)
     {
         this.mgr = mgr;
         this.state = state;
         this.windowManager = manager;
-        logUI = new LogUI(state, mgr.getLog(), manager);
+        logUI = new LogUI(state, log, manager);
     }
 
     public void createUI()
@@ -90,6 +91,7 @@ public class CopyUI
             //current file
             currentFileLabel = new UpdatableLabel(()->true, "%s", ()->state.getCurrentFile());
             panel.add(currentFileLabel);
+            currentFileLabel.setHorizontalAlignment(SwingConstants.TRAILING);//TODO set text alignment
 
             currentFileBar = new UpdatableProgressBar(()->true, ()->state.getCurrentFileProgress(), ()->state.getCurrentFileLength());
             panel.add(currentFileBar);
@@ -130,25 +132,30 @@ public class CopyUI
             frame.setVisible(true);
 
             //timer
-            t = new Timer(UPDATE, e-> SwingUtilities.invokeLater(()->{
-                totalFilesLabel.update();
-                totalFilesBar.update();
-                totalFilesProgress.update();
-
-                totalBytesLabel.update();
-                totalBytesBar.update();
-                totalBytesProgress.update();
-
-                currentFileLabel.update();
-                currentFileBar.update();
-                currentFileProgress.update();
-
-                frame.revalidate();
-                frame.repaint();
-            }));
+            t = new Timer(UPDATE, e->update());
             t.setCoalesce(true);
             t.setRepeats(true);
             t.start();
+        });
+    }
+
+    private void update()
+    {
+        SwingUtilities.invokeLater(()->{
+            totalFilesLabel.update();
+            totalFilesBar.update();
+            totalFilesProgress.update();
+
+            totalBytesLabel.update();
+            totalBytesBar.update();
+            totalBytesProgress.update();
+
+            currentFileLabel.update();
+            currentFileBar.update();
+            currentFileProgress.update();
+
+            frame.revalidate();
+            frame.repaint();
         });
     }
 
@@ -192,7 +199,7 @@ public class CopyUI
         });
     }
 
-    public void backupComplete(boolean normalTermination)
+    public void backupComplete()
     {
         SwingUtilities.invokeLater(()->{
             //set progressbars appropriately
@@ -206,9 +213,29 @@ public class CopyUI
             pc.setEnabled(false);
             dispose.setEnabled(true);
             log.setEnabled(true);
-
-            //TODO report
-            //frame.getGlassPane().add(new PopupMenu(normalTermination ? "Complete" : "Aborted"));
         });
+    }
+
+    public void precomputationComplete(boolean normalTermination)
+    {
+        if(normalTermination)
+        {
+            update();
+        }else
+        {
+            SwingUtilities.invokeLater(()->{
+                totalBytesLabel.setErrorState();
+                totalFilesLabel.setErrorState();
+
+                totalFilesBar.setDone();
+                totalBytesBar.setDone();
+
+                totalBytesProgress.setErrorState();
+                totalFilesProgress.setErrorState();
+
+                frame.revalidate();
+                frame.repaint();
+            });
+        }
     }
 }

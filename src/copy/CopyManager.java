@@ -19,8 +19,6 @@ public class CopyManager
 
     private CopyOp op;
 
-    private CopyLog log;
-
     private boolean running = true;
 
     //clean up
@@ -41,11 +39,11 @@ public class CopyManager
 
         CopyState state = new CopyState(in, out);
 
-        log = new CopyLog();
+        CopyLog log = new CopyLog();
         cleanupHelper = new CleanupHelper(in, out, log);
         module = new TrayModule(this, in, out);
-        precomputer = new Precomputer(state);
-        ui = new CopyUI(this, state, windowManager);
+        precomputer = new Precomputer(state, this);
+        ui = new CopyUI(this, state, windowManager, log);
         op = new CopyOp(this, state, log);
 
         cleanupHelper.onStart();
@@ -78,7 +76,7 @@ public class CopyManager
 
         precomputer.abort();
         op.abort();
-        ui.backupComplete(false);
+        ui.backupComplete();
         module.updateCompleted();
 
         if(JOptionPane.showOptionDialog(null, "Remove already backedup files?", "Cleanup",
@@ -106,27 +104,23 @@ public class CopyManager
         return module;
     }
 
-    public void processComplete(boolean normalTermination)
+    public void backupComplete()
     {
         cleanupHelper.onTermination();
 
         //copyop is already closed
-        ui.backupComplete(normalTermination);
+        ui.backupComplete();
         module.updateCompleted();
 
         manager.managerDisposed(this);
 
         running = false;
 
-        if(!normalTermination && hardCleanup)
+        if(hardCleanup)
             cleanupHelper.cleanUp();
     }
 
-    public CopyLog getLog() {
-        return log;
-    }
-
-    public void cleanup()
+    private void cleanup()
     {
         hardCleanup = true;
 
@@ -135,5 +129,10 @@ public class CopyManager
             return;
 
         cleanupHelper.cleanUp();
+    }
+
+    public void precomputationComplete(boolean normalTermination)
+    {
+        ui.precomputationComplete(normalTermination);
     }
 }

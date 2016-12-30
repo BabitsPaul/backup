@@ -34,4 +34,11 @@ public class UpdatableLabel
         if(updateCondition.getAsBoolean())
             setText(String.format(formatString, Arrays.stream(suppliers).map(Supplier::get).toArray()));
     }
+
+    public void setErrorState()
+    {
+        //change is final!!!
+        setText("Error");
+        updateCondition = ()->false;
+    }
 }

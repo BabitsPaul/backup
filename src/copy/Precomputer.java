@@ -10,9 +10,12 @@ public class Precomputer
 
     private boolean keepRunning = true;
 
-    public Precomputer(CopyState state)
+    private CopyManager manager;
+
+    public Precomputer(CopyState state, CopyManager manager)
     {
         this.state  = state;
+        this.manager = manager;
     }
 
     public void start()
@@ -51,6 +54,8 @@ public class Precomputer
         }
 
         state.precomputationComplete(totalFiles, totalBytes);
+
+        manager.precomputationComplete(keepRunning);
     }
 
     public void abort()

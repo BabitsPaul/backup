@@ -9,6 +9,9 @@ import java.io.File;
 
 public class SelectorUI
 {
+    private static final String INITIAL_IN = System.getProperty("user.home") + "/Documents";
+    private static final String INITIAL_OUT = System.getProperty("user.home") + "/Desktop/tmp";
+
     private Manager mgr;
 
     private JFrame frame;
@@ -27,11 +30,13 @@ public class SelectorUI
             JPanel panel = new JPanel();
             panel.setLayout(new GridLayout(3, 3));
 
-            panel.add(new JLabel("Input"));
+            JLabel inLabel = new JLabel("Input");
+            panel.add(inLabel);
 
-            JTextField in = new JTextField();
+            JTextField in = new JTextField(INITIAL_IN);
             in.setEnabled(true);
             panel.add(in);
+            inLabel.setLabelFor(in);
 
             JButton selectIn = new JButton("...");
             selectIn.addActionListener(e->{
@@ -53,13 +58,17 @@ public class SelectorUI
 
                 if(jfc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
                     in.setText(jfc.getSelectedFile().getAbsolutePath());
+
+                in.setEnabled(true);
             });
             panel.add(selectIn);
 
-            panel.add(new JLabel("Output"));
+            JLabel outLabel = new JLabel("Output");
+            panel.add(outLabel);
 
-            JTextField out = new JTextField();
+            JTextField out = new JTextField(INITIAL_OUT);
             panel.add(out);
+            outLabel.setLabelFor(out);
 
             JButton selectOut = new JButton("...");
             selectOut.addActionListener(e->{
@@ -81,6 +90,8 @@ public class SelectorUI
 
                 if(jfc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
                     out.setText(jfc.getSelectedFile().getAbsolutePath());
+
+                out.setEnabled(true);
             });
             panel.add(selectOut);
 
@@ -98,6 +109,9 @@ public class SelectorUI
                 mgr.newCopy(in.getText(), out.getText());
             });
             panel.add(start);
+
+            in.addActionListener(e->out.requestFocus());
+            out.addActionListener(e->start.doClick());
 
             frame = windowManager.requestFrame("Backup");
             frame.setContentPane(panel);
