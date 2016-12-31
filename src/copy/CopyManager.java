@@ -15,6 +15,8 @@ public class CopyManager
 
     private Precomputer precomputer;
 
+    private DiskIOProfiler diskIOProfiler;
+
     private CopyUI ui;
 
     private CopyOp op;
@@ -38,12 +40,13 @@ public class CopyManager
         this.manager = manager;
 
         CopyState state = new CopyState(in, out);
-
         CopyLog log = new CopyLog();
+
+        diskIOProfiler = new DiskIOProfiler(state);
         cleanupHelper = new CleanupHelper(in, out, log);
         module = new TrayModule(this, in, out);
         precomputer = new Precomputer(state, this);
-        ui = new CopyUI(this, state, windowManager, log);
+        ui = new CopyUI(this, state, windowManager, log, diskIOProfiler.getComponent());
         op = new CopyOp(this, state, log);
 
         precomputer.start();

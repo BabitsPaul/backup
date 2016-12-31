@@ -43,66 +43,83 @@ public class CopyUI
 
     private WindowManager windowManager;
 
-    public CopyUI(CopyManager mgr, CopyState state, WindowManager manager, CopyLog log)
+    private JComponent diskIOProfilerUI;
+
+    public CopyUI(CopyManager mgr, CopyState state, WindowManager manager, CopyLog log, JComponent diskProfilerUI)
     {
         this.mgr = mgr;
         this.state = state;
         this.windowManager = manager;
         logUI = new LogUI(state, log, manager);
+        this.diskIOProfilerUI = diskProfilerUI;
     }
 
     public void createUI()
     {
         SwingUtilities.invokeLater(()->{
             JPanel panel = new JPanel();
-            panel.setLayout(new GridLayout(0, 3));
+            panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
             //header
-            panel.add(new JLabel(state.getFileIn()));
-            panel.add(new JLabel(" ---> "));
-            panel.add(new JLabel(state.getFileOut()));
+            JPanel header = new JPanel();
+            header.setLayout(new BoxLayout(header, BoxLayout.X_AXIS));
+            panel.add(header);
+            header.add(new JLabel(state.getFileIn()));
+            header.add(new JLabel(" ---> "));
+            header.add(new JLabel(state.getFileOut()));
 
             //files
+            JPanel statistics = new JPanel();
+            statistics.setLayout(new GridLayout(3, 3));
+            panel.add(statistics);
+
             totalFilesLabel = new UpdatableLabel(()->state.isPrecomputationComplete(), "%d/%d files",
                     ()->state.getTotalFileProgress(), ()->state.getTotalFiles());
-            panel.add(totalFilesLabel);
+            statistics.add(totalFilesLabel);
 
             totalFilesBar = new UpdatableProgressBar(()->state.isPrecomputationComplete(), ()->state.getTotalFileProgress(),
                     ()->state.getTotalFiles());
-            panel.add(totalFilesBar);
+            statistics.add(totalFilesBar);
 
             totalFilesProgress = new PercentProgress(()->state.isPrecomputationComplete(), ()->state.getTotalFileProgress(),
                                                         ()->state.getTotalFiles());
-            panel.add(totalFilesProgress);
+            statistics.add(totalFilesProgress);
 
             //bytes
             totalBytesLabel = new UpdatableLabel(()->state.isPrecomputationComplete(), "%d/%d bytes",
                     ()->state.getTotalBytesProgress(), ()->state.getTotalBytes());
-            panel.add(totalBytesLabel);
+            statistics.add(totalBytesLabel);
 
             totalBytesBar = new UpdatableProgressBar(()->state.isPrecomputationComplete(), ()->state.getTotalBytesProgress(),
                     ()->state.getTotalBytes());
-            panel.add(totalBytesBar);
+            statistics.add(totalBytesBar);
 
             totalBytesProgress = new PercentProgress(()->state.isPrecomputationComplete(), ()->state.getTotalBytesProgress(),
                     ()->state.getTotalBytes());
-            panel.add(totalBytesProgress);
+            statistics.add(totalBytesProgress);
 
             //current file
             currentFileLabel = new UpdatableLabel(()->true, "%s", ()->state.getCurrentFile());
-            panel.add(currentFileLabel);
+            statistics.add(currentFileLabel);
             currentFileLabel.setUI(new LeftDotLabelUI());
 
             currentFileBar = new UpdatableProgressBar(()->true, ()->state.getCurrentFileProgress(), ()->state.getCurrentFileLength());
-            panel.add(currentFileBar);
+            statistics.add(currentFileBar);
 
             currentFileProgress = new PercentProgress(()->true, ()->state.getCurrentFileProgress(), ()->state.getCurrentFileLength());
-            panel.add(currentFileProgress);
+            statistics.add(currentFileProgress);
+
+            //throughput
+            panel.add(diskIOProfilerUI);
 
             //control panel
+            JPanel controls = new JPanel();
+            controls.setLayout(new BoxLayout(controls, BoxLayout.X_AXIS));
+            panel.add(controls);
+
             cancel = new JButton("Cancel");
             cancel.addActionListener(e->mgr.abortProcess());
-            panel.add(cancel);
+            controls.add(cancel);
 
             pc = new JButton("Pause");
             pc.addActionListener(e->{
@@ -111,17 +128,17 @@ public class CopyUI
                 else
                     mgr.pauseProcess();
             });
-            panel.add(pc);
+            controls.add(pc);
 
             dispose = new JButton("Dispose");
             dispose.addActionListener(e->mgr.dispose());
             dispose.setEnabled(false);
-            panel.add(dispose);
+            controls.add(dispose);
 
             log = new JButton("Show log");
             log.addActionListener(e->logUI.showUI());
             log.setEnabled(false);
-            panel.add(log);
+            controls.add(log);
 
             //main frame
             frame = windowManager.requestFrame(state.getFileIn() + " --> " + state.getFileOut());

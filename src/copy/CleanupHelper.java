@@ -26,6 +26,7 @@ public class CleanupHelper
         this.in = in;
         this.out = out;
         this.copyLog = copyLog;
+        this.toDelete = new LinkedList<>();
     }
 
     /**
@@ -70,6 +71,9 @@ public class CleanupHelper
      */
     private void listToDeleteRecursive(File in, String out)
     {
+        //TODO stackoverflow!!!
+        System.out.println(in.getAbsolutePath());
+
         if(in.isFile())
         {
             if(!new File(out).exists())
