@@ -46,11 +46,10 @@ public class CopyManager
         ui = new CopyUI(this, state, windowManager, log);
         op = new CopyOp(this, state, log);
 
+        precomputer.start();
         cleanupHelper.onStart();
-
         ui.createUI();
         op.start();
-        precomputer.start();
     }
 
     public void pauseProcess()
@@ -106,8 +105,6 @@ public class CopyManager
 
     public void backupComplete()
     {
-        cleanupHelper.onTermination();
-
         //copyop is already closed
         ui.backupComplete();
         module.updateCompleted();

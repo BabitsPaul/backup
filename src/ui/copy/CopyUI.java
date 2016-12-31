@@ -91,7 +91,7 @@ public class CopyUI
             //current file
             currentFileLabel = new UpdatableLabel(()->true, "%s", ()->state.getCurrentFile());
             panel.add(currentFileLabel);
-            currentFileLabel.setHorizontalAlignment(SwingConstants.TRAILING);//TODO set text alignment
+            currentFileLabel.setUI(new LeftDotLabelUI());
 
             currentFileBar = new UpdatableProgressBar(()->true, ()->state.getCurrentFileProgress(), ()->state.getCurrentFileLength());
             panel.add(currentFileBar);

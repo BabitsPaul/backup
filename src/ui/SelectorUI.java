@@ -109,7 +109,6 @@ public class SelectorUI
                 mgr.newCopy(in.getText(), out.getText());
             });
             panel.add(start);
-
             in.addActionListener(e->out.requestFocus());
             out.addActionListener(e->start.doClick());
 
