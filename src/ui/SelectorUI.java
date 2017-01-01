@@ -9,7 +9,7 @@ import java.io.File;
 
 public class SelectorUI
 {
-    private static final String INITIAL_IN = System.getProperty("user.home") + "/Documents";
+    private static final String INITIAL_IN = System.getProperty("user.home") + "/Documents/test";
     private static final String INITIAL_OUT = System.getProperty("user.home") + "/Desktop/tmp";
 
     private Manager mgr;

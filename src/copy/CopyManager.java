@@ -24,6 +24,9 @@ public class CopyManager
 
     private boolean running = true;
 
+    //paused flag
+    private boolean paused = false;
+
     //clean up
     private boolean hardCleanup = false;
 
@@ -59,6 +62,9 @@ public class CopyManager
 
     public void pauseProcess()
     {
+        if(paused)
+            throw new IllegalStateException("Already paused");
+
         op.pauseProcess();
         ui.pauseBackup();
         module.updatePaused();
@@ -67,6 +73,9 @@ public class CopyManager
 
     public void continueProcess()
     {
+        if(!paused)
+            throw new IllegalStateException("Not paused");
+
         op.continueProcess();
         ui.continueBackup();
         module.updateContinue();
@@ -75,13 +84,16 @@ public class CopyManager
 
     public void abortProcess()
     {
-        pauseProcess();
+        if(!paused)
+            pauseProcess();
 
         if(JOptionPane.showOptionDialog(null, "Abort process?", "Abort",
                 JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null,
                 new String[]{"Abort process", "Cancel"}, "Cancel") == 1)
         {
-            continueProcess();
+            if(paused)
+                continueProcess();
+
             return;
         }
 

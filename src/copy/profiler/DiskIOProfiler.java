@@ -42,16 +42,19 @@ public class DiskIOProfiler
     public void pauseProfiling()
     {
         t.stop();
+        helper.processPaused();
     }
 
     public void continueProfiling()
     {
         t.start();
+        helper.processContinued();
     }
 
     public void terminate()
     {
         t.stop();
+
     }
 
     public JComponent getComponent()

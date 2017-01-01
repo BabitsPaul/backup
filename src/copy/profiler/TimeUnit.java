@@ -1,7 +1,7 @@
 package copy.profiler;
 
 public enum TimeUnit {
-    SECOND(1, "sec"),
+    SECONDS(1, "sec"),
     MILLI_SECONDS(1000, "ms"),
     NANO_SECONDS(1000000000, "ns");
 

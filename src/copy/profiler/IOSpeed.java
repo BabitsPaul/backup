@@ -29,4 +29,8 @@ public class IOSpeed
     public DataUnit getDataUnit() {
         return dataUnit;
     }
+
+    public TimeUnit getTimeUnit() {
+        return TimeUnit.SECONDS;
+    }
 }

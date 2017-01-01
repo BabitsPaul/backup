@@ -73,18 +73,18 @@ public class CleanupHelper
     {
         if(!new File(out).exists())
         {
-            toDelete.add(in);
+            toDelete.add(new File(out));
         }
         else
         {
             Set<String> files = new HashSet<>();
 
             try{
-                Iterator<Path> iter = Files.newDirectoryStream(FileSystems.getDefault().getPath(this.in)).iterator();
+                Iterator<Path> iter = Files.newDirectoryStream(FileSystems.getDefault().getPath(in.getAbsolutePath())).iterator();
                 while(iter.hasNext())
                     files.add(iter.next().toFile().getName());
 
-                iter = Files.newDirectoryStream(FileSystems.getDefault().getPath(this.out)).iterator();
+                iter = Files.newDirectoryStream(FileSystems.getDefault().getPath(out)).iterator();
                 while(iter.hasNext()) {
                     File f = iter.next().toFile();
 

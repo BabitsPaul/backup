@@ -11,8 +11,6 @@ import java.util.Set;
 
 public class Manager
 {
-    //TODO systray gets disposed on copyop start
-
     private SysTray tray;
 
     private SelectorUI selectorUI;
@@ -81,6 +79,8 @@ public class Manager
     public void managerDisposed(CopyManager manager)
     {
         managers.remove(manager);
+
+        //TODO terminate if no windows and copymanagers remain open
     }
 
     public void showSelectorUI()
