@@ -11,6 +11,8 @@ import java.util.Set;
 
 public class Manager
 {
+    //TODO systray gets disposed on copyop start
+
     private SysTray tray;
 
     private SelectorUI selectorUI;
@@ -67,10 +69,11 @@ public class Manager
 
     public void newCopy(String in, String out)
     {
-        selectorUI.hide();
-
         CopyManager manager = new CopyManager(this, in, out, windowManager);
         managers.add(manager);
+
+        //hide selectorUI after creating manager to make sure at least one window is open
+        selectorUI.hide();
 
         tray.newTrayModule(manager.getTrayModule());
     }

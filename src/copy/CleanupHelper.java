@@ -71,13 +71,9 @@ public class CleanupHelper
      */
     private void listToDeleteRecursive(File in, String out)
     {
-        //TODO stackoverflow!!!
-        System.out.println(in.getAbsolutePath());
-
-        if(in.isFile())
+        if(!new File(out).exists())
         {
-            if(!new File(out).exists())
-                toDelete.add(in);
+            toDelete.add(in);
         }
         else
         {

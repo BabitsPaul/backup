@@ -1,5 +1,6 @@
 package copy;
 
+import copy.profiler.DiskIOProfiler;
 import mgr.Manager;
 import systray.TrayModule;
 import ui.WindowManager;
@@ -53,6 +54,7 @@ public class CopyManager
         cleanupHelper.onStart();
         ui.createUI();
         op.start();
+        diskIOProfiler.start();
     }
 
     public void pauseProcess()
@@ -60,6 +62,7 @@ public class CopyManager
         op.pauseProcess();
         ui.pauseBackup();
         module.updatePaused();
+        diskIOProfiler.pauseProfiling();
     }
 
     public void continueProcess()
@@ -67,15 +70,22 @@ public class CopyManager
         op.continueProcess();
         ui.continueBackup();
         module.updateContinue();
+        diskIOProfiler.continueProfiling();
     }
 
     public void abortProcess()
     {
+        pauseProcess();
+
         if(JOptionPane.showOptionDialog(null, "Abort process?", "Abort",
                 JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null,
                 new String[]{"Abort process", "Cancel"}, "Cancel") == 1)
+        {
+            continueProcess();
             return;
+        }
 
+        diskIOProfiler.terminate();
         precomputer.abort();
         op.abort();
         ui.backupComplete();

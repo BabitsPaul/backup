@@ -143,7 +143,7 @@ public class CopyUI
             //main frame
             frame = windowManager.requestFrame(state.getFileIn() + " --> " + state.getFileOut());
             frame.setContentPane(panel);
-            frame.pack();
+            frame.pack();       //TODO flawed layout!!!
             frame.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
             frame.setSize(100, 100);
             frame.setVisible(true);
