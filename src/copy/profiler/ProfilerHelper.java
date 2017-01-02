@@ -1,11 +1,12 @@
 package copy.profiler;
 
 import copy.CopyState;
+import javafx.util.Pair;
+
+import java.util.LinkedList;
 
 public class ProfilerHelper
 {
-    //TODO median speed (evtl for interpolation of time)
-
     private CopyState state;
 
     public ProfilerHelper(CopyState state)
@@ -34,6 +35,7 @@ public class ProfilerHelper
 
         interpolateTotalSpeed();
         interpolateCurrentSpeed();
+        interpolateMiddleTermSpeed();
 
         estimateRemainingTime();
     }
@@ -122,7 +124,36 @@ public class ProfilerHelper
     //                                                                                             //
     /////////////////////////////////////////////////////////////////////////////////////////////////
 
+    private static final int DEFAULT_DATA_POINTS = 1000;
+
+    private int dataPoints = DEFAULT_DATA_POINTS;
+
+    private LinkedList<Pair<Long, Long>> lastWrites = new LinkedList<>();
+
     private IOSpeed middleTerm = new IOSpeed(1, 0, TimeUnit.SECONDS);
+
+    private void interpolateMiddleTermSpeed()
+    {
+        //update list of writes
+        if(lastWrites.size() > dataPoints)
+            lastWrites.remove(0);
+
+        //no need to keep an eye on pauses, as data-points are created independently
+        lastWrites.add(new Pair<>(currentTimeNano - lastNanoTime, totalBytesProgress - lastBytesCopied));
+
+        double tmpSpeed = lastWrites.stream().mapToDouble(p->p.getValue() / p.getKey()).sum() / lastWrites.size();
+        middleTerm = new IOSpeed(tmpSpeed, TimeUnit.NANO_SECONDS, DataUnit.SI_BYTE);
+    }
+
+    public void setDataPointNum(int ndataPoints)
+    {
+        dataPoints = ndataPoints;
+    }
+
+    public IOSpeed getMiddleTerm()
+    {
+        return middleTerm;
+    }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
     // remaining time estimation                                                                    //
@@ -132,6 +163,7 @@ public class ProfilerHelper
 
     private static final int WEIGHT_TOTAL_SPEED = 5;
     private static final int WEIGHT_CURRENT_SPEED = 2;
+    private static final int WEIGHT_MIDDLE_TERM_SPEED = 7;
 
     private long timeRemaining = -1;
 
@@ -142,15 +174,29 @@ public class ProfilerHelper
 
         long bytesRemaining = state.getTotalBytes() - totalBytesProgress;
 
-        //time = bytes * (speed * factor to bytes/second) ^ (-1)
-        long timeRemainingTotal = (long) (bytesRemaining * total.getTimeUnit().getFactor()
-                                            / (total.getSpeed() * total.getDataUnit().getBytesPerUnit()));
+        final int[] weights = new int[]{
+                WEIGHT_CURRENT_SPEED,
+                WEIGHT_MIDDLE_TERM_SPEED,
+                WEIGHT_TOTAL_SPEED
+        };
 
-        long timeRemainingCurrent = (long) (bytesRemaining * current.getTimeUnit().getFactor()
-                                            / (current.getSpeed() * current.getDataUnit().getBytesPerUnit()));
+        final IOSpeed[] speed = new IOSpeed[]{
+                current,
+                middleTerm,
+                total
+        };
 
-        timeRemaining = (WEIGHT_TOTAL_SPEED * timeRemainingTotal + WEIGHT_CURRENT_SPEED * timeRemainingCurrent)
-                            / (WEIGHT_CURRENT_SPEED + WEIGHT_TOTAL_SPEED);
+        long arithmMeanNumerator = 0L,
+                arithmMeanDenominator = 0L;
+        for(int i = 0; i < weights.length; i++)
+        {
+            arithmMeanNumerator += (long) (bytesRemaining * speed[i].getTimeUnit().getFactor()
+                                                / (speed[i].getSpeed() * speed[i].getDataUnit().getBytesPerUnit())) * weights[i];
+
+            arithmMeanDenominator += weights[i];
+        }
+
+        timeRemaining = arithmMeanNumerator / arithmMeanDenominator;
     }
 
     public long getTimeRemaining(TimeUnit unit)

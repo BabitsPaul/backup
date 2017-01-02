@@ -22,6 +22,21 @@ public class IOSpeed
         speed /= dataUnit.getBytesPerUnit();
     }
 
+    public IOSpeed(double speed, TimeUnit timeUnit, DataUnit unit)
+    {
+        //transform to bytes/second
+        speed *= unit.getBytesPerUnit();
+        speed /= timeUnit.getFactor() * TimeUnit.SECONDS.getFactor();
+
+        dataUnit = DataUnit.SI_BYTE;
+
+        while (speed / dataUnit.getBytesPerUnit() >= 1000)
+            dataUnit = DataUnit.up(dataUnit);
+
+        //final speed
+        speed /= dataUnit.getBytesPerUnit();
+    }
+
     public double getSpeed() {
         return speed;
     }
