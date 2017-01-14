@@ -4,6 +4,10 @@ import copy.CopyLog;
 import copy.CopyManager;
 import copy.CopyState;
 import ui.WindowManager;
+import util.ui.LeftDotLabelUI;
+import util.ui.PercentProgress;
+import util.ui.UpdatableLabel;
+import util.ui.UpdatableProgressBar;
 
 import javax.swing.*;
 import java.awt.*;
@@ -145,7 +149,6 @@ public class CopyUI
             frame.setContentPane(panel);
             frame.pack();
             frame.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
-            frame.setSize(200, frame.getHeight());
             frame.setVisible(true);
 
             //timer
@@ -159,6 +162,9 @@ public class CopyUI
     private void update()
     {
         SwingUtilities.invokeLater(()->{
+            if(totalFilesLabel == null)
+                return;
+
             totalFilesLabel.update();
             totalFilesBar.update();
             totalFilesProgress.update();

@@ -1,6 +1,9 @@
 package copy.profiler;
 
 import copy.CopyState;
+import copy.profiler.timingutil.IOSpeed;
+import copy.profiler.timingutil.Time;
+import copy.profiler.timingutil.TimeUnit;
 import javafx.util.Pair;
 
 import java.util.LinkedList;
@@ -8,6 +11,10 @@ import java.util.LinkedList;
 public class ProfilerHelper
 {
     private CopyState state;
+
+    private long startTime;
+
+    private ProfilerDataPoint dataPoint;
 
     public ProfilerHelper(CopyState state)
     {
@@ -22,15 +29,15 @@ public class ProfilerHelper
     //                                                                                            //
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private long totalBytesProgress,
-                    currentTimeMillis,
-                    currentTimeNano;
+    private long totalBytesProgress;
 
     public void interpolationTick()
     {
         //load all values before interpolation to keep maximum precision
-        currentTimeNano = System.nanoTime();
-        currentTimeMillis = System.currentTimeMillis();
+        dataPoint = new ProfilerDataPoint();
+        dataPoint.currentTimeMills = new Time(System.currentTimeMillis(), TimeUnit.MILLI_SECONDS);
+        dataPoint.currentTimeNanos = new Time(System.nanoTime(), TimeUnit.NANO_SECONDS);
+        dataPoint.totalTimeRunning = new Time(dataPoint.currentTimeMills.getValue() - startTime - totalPauseDuration, TimeUnit.MILLI_SECONDS);
         totalBytesProgress = state.getTotalBytesProgress();
 
         interpolateTotalSpeed();
@@ -38,6 +45,11 @@ public class ProfilerHelper
         interpolateMiddleTermSpeed();
 
         estimateRemainingTime();
+    }
+
+    public ProfilerDataPoint getLastPoint()
+    {
+        return dataPoint;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -79,18 +91,9 @@ public class ProfilerHelper
     //                                                                                            //
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private IOSpeed total = new IOSpeed(1, 0, TimeUnit.SECONDS);
-
-    private long startTime;
-
     private void interpolateTotalSpeed()
     {
-        total = new IOSpeed(currentTimeMillis - startTime - totalPauseDuration, totalBytesProgress, TimeUnit.MILLI_SECONDS);
-    }
-
-    public IOSpeed getTotal()
-    {
-        return total;
+        dataPoint.total = new IOSpeed(dataPoint.currentTimeMills.getValue() - startTime - totalPauseDuration, totalBytesProgress, TimeUnit.MILLI_SECONDS);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -99,23 +102,16 @@ public class ProfilerHelper
     //                                                                                            //
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private IOSpeed current = new IOSpeed(1, 0, TimeUnit.SECONDS);
-
     private long lastNanoTime;
 
     private long lastBytesCopied = 0;
 
     private void interpolateCurrentSpeed()
     {
-        current = new IOSpeed(currentTimeNano - lastNanoTime,totalBytesProgress - lastBytesCopied, TimeUnit.NANO_SECONDS);
+        dataPoint.current = new IOSpeed(dataPoint.currentTimeNanos.getValue() - lastNanoTime,totalBytesProgress - lastBytesCopied, TimeUnit.NANO_SECONDS);
 
-        lastNanoTime = currentTimeNano;
+        lastNanoTime = dataPoint.currentTimeNanos.getValue();
         lastBytesCopied = totalBytesProgress;
-    }
-
-    public IOSpeed getCurrent()
-    {
-        return current;
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -124,35 +120,39 @@ public class ProfilerHelper
     //                                                                                             //
     /////////////////////////////////////////////////////////////////////////////////////////////////
 
+    //TODO use cache
     private static final int DEFAULT_DATA_POINTS = 1000;
 
     private int dataPoints = DEFAULT_DATA_POINTS;
 
     private LinkedList<Pair<Long, Long>> lastWrites = new LinkedList<>();
 
-    private IOSpeed middleTerm = new IOSpeed(1, 0, TimeUnit.SECONDS);
-
     private void interpolateMiddleTermSpeed()
     {
+        //TODO instable + handle speed, when nothing is copied
+        dataPoint.middleTerm = dataPoint.current;
+        return;
+
+        /*
+        //do not create middle term speed on first interpolation
+        if(totalBytesProgress - lastBytesCopied == 0)
+            return;
+
         //update list of writes
         if(lastWrites.size() > dataPoints)
             lastWrites.remove(0);
 
         //no need to keep an eye on pauses, as data-points are created independently
-        lastWrites.add(new Pair<>(currentTimeNano - lastNanoTime, totalBytesProgress - lastBytesCopied));
+        lastWrites.add(new Pair<>(dataPoint.currentTimeNanos.getValue() - lastNanoTime, totalBytesProgress - lastBytesCopied));
 
         double tmpSpeed = lastWrites.stream().mapToDouble(p->p.getValue() / p.getKey()).sum() / lastWrites.size();
-        middleTerm = new IOSpeed(tmpSpeed, TimeUnit.NANO_SECONDS, DataUnit.SI_BYTE);
+        dataPoint.middleTerm = new IOSpeed(tmpSpeed, TimeUnit.NANO_SECONDS, DataUnit.SI_BYTE);
+        */
     }
 
     public void setDataPointNum(int ndataPoints)
     {
         dataPoints = ndataPoints;
-    }
-
-    public IOSpeed getMiddleTerm()
-    {
-        return middleTerm;
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -181,9 +181,9 @@ public class ProfilerHelper
         };
 
         final IOSpeed[] speed = new IOSpeed[]{
-                current,
-                middleTerm,
-                total
+                dataPoint.current,
+                dataPoint.middleTerm,
+                dataPoint.total
         };
 
         long arithmMeanNumerator = 0L,

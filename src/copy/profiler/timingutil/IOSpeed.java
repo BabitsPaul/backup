@@ -1,6 +1,7 @@
-package copy.profiler;
+package copy.profiler.timingutil;
 
 public class IOSpeed
+    implements Comparable<IOSpeed>
 {
     /**
      * speed in dataunit/seconds
@@ -47,5 +48,15 @@ public class IOSpeed
 
     public TimeUnit getTimeUnit() {
         return TimeUnit.SECONDS;
+    }
+
+    public String toString()
+    {
+        return speed + dataUnit.getName() + "/" + getTimeUnit().getName();
+    }
+
+    @Override
+    public int compareTo(IOSpeed o) {
+        return Double.compare(speed * dataUnit.getBytesPerUnit(), (o.speed * o.dataUnit.getBytesPerUnit()));
     }
 }

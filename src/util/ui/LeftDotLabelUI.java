@@ -1,4 +1,4 @@
-package ui.copy;
+package util.ui;
 
 import javax.swing.*;
 import javax.swing.plaf.metal.MetalLabelUI;

@@ -10,6 +10,8 @@ import javax.swing.*;
 
 public class CopyManager
 {
+    //TODO doesn't terminate on normal completion
+
     private Manager manager;
 
     private TrayModule module;
@@ -34,6 +36,7 @@ public class CopyManager
 
     public CopyManager(Manager manager, String in, String out, WindowManager windowManager)
     {
+        //TODO transfer to background, since UI hangs itself up!!!
         //strip trailing slashes
         while (in.endsWith("/"))
             in = in.substring(0, in.length() - 1);
@@ -65,6 +68,7 @@ public class CopyManager
         if(paused)
             throw new IllegalStateException("Already paused");
 
+        paused = true;
         op.pauseProcess();
         ui.pauseBackup();
         module.updatePaused();
@@ -76,6 +80,7 @@ public class CopyManager
         if(!paused)
             throw new IllegalStateException("Not paused");
 
+        paused = false;
         op.continueProcess();
         ui.continueBackup();
         module.updateContinue();

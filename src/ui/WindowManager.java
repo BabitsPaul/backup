@@ -44,4 +44,9 @@ public class WindowManager
 
         return result;
     }
+
+    public int openWindows()
+    {
+        return count;
+    }
 }

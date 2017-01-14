@@ -80,7 +80,9 @@ public class Manager
     {
         managers.remove(manager);
 
-        //TODO terminate if no windows and copymanagers remain open
+        //dispose if all windows are closed and no managers running
+        if(windowManager.openWindows() == 0 && managers.size() == 0)
+            shutdown();
     }
 
     public void showSelectorUI()
