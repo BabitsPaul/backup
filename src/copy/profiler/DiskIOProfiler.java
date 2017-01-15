@@ -7,7 +7,8 @@ import java.lang.reflect.InvocationTargetException;
 
 public class DiskIOProfiler
 {
-    private static final int REFRESH_RATE = (int) (1.0 / 60);
+    //TODO stability (write speeds have extreme drop-offs/rises
+    private static final int REFRESH_RATE = (int) (1.0 / 10);
 
     private JPanel panel;
 

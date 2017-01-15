@@ -1,9 +1,7 @@
 package copy.profiler;
 
-import copy.profiler.timingutil.IOSpeed;
-import copy.profiler.timingutil.Time;
-
-import java.util.Comparator;
+import util.unit.IOSpeed;
+import util.unit.Time;
 
 public class ProfilerDataPoint
 {

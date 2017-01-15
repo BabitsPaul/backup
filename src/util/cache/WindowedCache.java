@@ -7,7 +7,7 @@ public class WindowedCache<T>
 {
     private static final CacheTraits DEFAULT_TRAITS =
             new CacheTraits(CacheTraits.WINDOWED_WINDOW_SIZE, 10000,
-                                    CacheTraits.WINDOWED_ELEMENT_DISTANCE, 1,
+                                    CacheTraits.WINDOWED_ELEMENT_DISTANCE, 1L,
                                     CacheTraits.WINDOWED_ELEMENT_DIST_DETERMINAND, null,
                                     CacheTraits.SPECIAL_VALUES, new HashMap<>());
 
@@ -18,8 +18,6 @@ public class WindowedCache<T>
     private final boolean keepDistance;
 
     private final DistanceDeterminand<T> determinand;
-
-    private int totalElements;
 
     private LinkedList<T> internalCache;
 
@@ -39,7 +37,6 @@ public class WindowedCache<T>
         if(elementDistance < 0)
             throw new IllegalArgumentException("Distance between elements must be positive");
 
-        totalElements = 0;
         internalCache = new LinkedList<>();
     }
 
@@ -50,7 +47,7 @@ public class WindowedCache<T>
         if(keepDistance && determinand.distance(internalCache.getLast(), t) < elementDistance)
                 return;
 
-        if(totalElements == maximumElements)
+        while(internalCache.size() >= maximumElements)
             internalCache.removeFirst();
 
         internalCache.addLast(t);

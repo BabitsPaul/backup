@@ -15,7 +15,7 @@ public class SpecialValue<T>
      * first param: currently stored value
      * second param: value to check
      *
-     * returns true, if the valuue should be updated
+     * returns true, if the value should be updated
      */
     private BiFunction<T, T, Boolean> valSpecial;
 

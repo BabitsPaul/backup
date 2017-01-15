@@ -1,4 +1,4 @@
-package copy.profiler.timingutil;
+package util.unit;
 
 public class IOSpeed
     implements Comparable<IOSpeed>

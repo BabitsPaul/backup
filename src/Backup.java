@@ -1,9 +1,9 @@
-import mgr.Manager;
+import test.TestingUtil;
 
 public class Backup
 {
     public static void main(String[] args)
     {
-        new Manager().setup();
+        TestingUtil.run();
     }
 }

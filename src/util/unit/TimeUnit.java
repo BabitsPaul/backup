@@ -1,4 +1,4 @@
-package copy.profiler.timingutil;
+package util.unit;
 
 public enum TimeUnit {
     SECONDS(1, "sec"),

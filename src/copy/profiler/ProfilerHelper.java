@@ -1,9 +1,9 @@
 package copy.profiler;
 
 import copy.CopyState;
-import copy.profiler.timingutil.IOSpeed;
-import copy.profiler.timingutil.Time;
-import copy.profiler.timingutil.TimeUnit;
+import util.unit.IOSpeed;
+import util.unit.Time;
+import util.unit.TimeUnit;
 import javafx.util.Pair;
 
 import java.util.LinkedList;

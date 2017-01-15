@@ -1,9 +1,9 @@
 package util.cache;
 
-import java.util.Properties;
+import java.util.HashMap;
 
 public class CacheTraits
-    extends Properties
+    extends HashMap<String, Object>
 {
     /**
      * general traits
@@ -21,7 +21,7 @@ public class CacheTraits
     public CacheTraits(Object... traits)
     {
         for(int i = 0; i < traits.length ; i += 2)
-            put(traits[i], traits[i + 1]);
+            put((String) traits[i], traits[i + 1]);
     }
 
     public Object getOrDefault(Object key, CacheTraits defaults)
