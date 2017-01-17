@@ -101,7 +101,7 @@ public class SelectorUI
 
                 if(!new File(inputFile).exists())
                 {
-                    JOptionPane.showMessageDialog(null, "Input-file doesn't exist: " + inputFile,
+                    JOptionPane.showMessageDialog(null, "Input-io doesn't exist: " + inputFile,
                             "ERROR", JOptionPane.ERROR_MESSAGE);
                     return;
                 }

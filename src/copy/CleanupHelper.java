@@ -66,7 +66,7 @@ public class CleanupHelper
      * Recursively generates a list of files that can be deleted without affecting already
      * present files
      *
-     * @param in the file that gets inspected
+     * @param in the io that gets inspected
      * @param out the peer in the output-directory
      */
     private void listToDeleteRecursive(File in, String out)
@@ -126,7 +126,7 @@ public class CleanupHelper
      * Recursively deletes a directory-structure by deleting
      * it's childnodes and afterwards it's containing directories
      *
-     * @param f the file to delete
+     * @param f the io to delete
      * @see CleanupHelper#cleanUp()
      */
     private void cleanUpRecursive(File f)

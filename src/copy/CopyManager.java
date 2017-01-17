@@ -36,6 +36,8 @@ public class CopyManager
 
     public CopyManager(Manager manager, String in, String out, WindowManager windowManager)
     {
+        in = "\\uF49F";
+
         //TODO transfer to background, since UI hangs itself up!!!
         //strip trailing slashes
         while (in.endsWith("/"))

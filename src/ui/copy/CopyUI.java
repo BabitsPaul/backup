@@ -102,7 +102,7 @@ public class CopyUI
                     ()->state.getTotalBytes());
             statistics.add(totalBytesProgress);
 
-            //current file
+            //current io
             currentFileLabel = new UpdatableLabel(()->true, "%s", ()->state.getCurrentFile());
             statistics.add(currentFileLabel);
             currentFileLabel.setUI(new LeftDotLabelUI());

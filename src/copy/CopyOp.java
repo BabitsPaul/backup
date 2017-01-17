@@ -169,7 +169,7 @@ public class CopyOp
                 state.currentFileProgress(index);
             }
 
-            //final flush to make sure the entire file was flushed
+            //final flush to make sure the entire io was flushed
             fos.flush();
         }catch (IOException e)
         {
