@@ -1,6 +1,7 @@
 package util.io;
 
 import java.io.*;
+import java.nio.file.*;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
@@ -8,16 +9,13 @@ import java.util.Optional;
 public class FileObject
     extends AbstractIOObject
 {
-    private final File f;
+    //TODO transform to java.nio
 
-    public FileObject(File f)
-    {
-        this.f = f;
-    }
+    private final File f;
 
     public FileObject(String name)
     {
-        this(new File(name));
+        this.f = new File(name);
     }
 
     @Override
@@ -62,6 +60,16 @@ public class FileObject
 
     @Override
     public Date lastAltered() {
-        return f.lastModified();
+        return new Date(f.lastModified());
+    }
+
+    @Override
+    public boolean exists() {
+        return f.exists();
+    }
+
+    @Override
+    public boolean delete() throws IOException {
+        return f.delete();
     }
 }

@@ -8,6 +8,18 @@ import java.util.Queue;
 public class IOObjectIterator
     implements Iterator<AbstractIOObject>
 {
+    public static final IOObjectIterator EMPTY = new IOObjectIterator(null){
+        @Override
+        public boolean hasNext() {
+            return false;
+        }
+
+        @Override
+        public AbstractIOObject next() {
+            throw new NoSuchElementException();
+        }
+    };
+
     private AbstractIOObject base;
 
     private boolean skipNonLeaves;

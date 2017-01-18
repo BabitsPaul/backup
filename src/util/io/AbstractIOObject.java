@@ -22,4 +22,9 @@ public abstract class AbstractIOObject
     public abstract long size();
 
     public abstract Date lastAltered();
+
+    public abstract boolean exists();
+
+    public abstract boolean delete()
+        throws IOException;
 }

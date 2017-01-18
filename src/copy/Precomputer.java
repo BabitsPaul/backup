@@ -1,5 +1,8 @@
 package copy;
 
+import util.io.FileObject;
+import util.io.IOObjectIterator;
+
 import java.io.File;
 import java.util.PriorityQueue;
 import java.util.Queue;
@@ -55,6 +58,22 @@ public class Precomputer
 
         state.precomputationComplete(totalFiles, totalBytes);
 
+        manager.precomputationComplete(keepRunning);
+    }
+
+    private void precompute2()
+    {
+        int totalFiles = 0;
+        long totalBytes = 0L;
+
+        IOObjectIterator iter = new IOObjectIterator(new FileObject(state.getFileIn()), true);
+        while(iter.hasNext() && keepRunning)
+        {
+            totalFiles++;
+            totalBytes += iter.next().size();
+        }
+
+        state.precomputationComplete(totalFiles, totalBytes);
         manager.precomputationComplete(keepRunning);
     }
 
