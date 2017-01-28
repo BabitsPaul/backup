@@ -49,7 +49,8 @@ public class LogUI
             StringBuilder uptoDate = new StringBuilder();
             for(String file : log.getUptoDate())
                 uptoDate.append(file).append(lf);
-            //uptoDate.setLength(uptoDate.length() - lf.length());//truncate last linefeed
+            if(uptoDate.length() > 0)
+                uptoDate.setLength(uptoDate.length() - lf.length());//truncate last linefeed
 
             StringBuilder errors = new StringBuilder();
             Map<String, LinkedList<String>> errorMap = log.getErrorMap();

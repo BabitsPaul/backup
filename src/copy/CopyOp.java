@@ -1,16 +1,24 @@
 package copy;
 
+import util.io.AbstractIOObject;
+import util.io.FileObject;
+import util.io.IOObjectIterator;
+
 import javax.swing.*;
 import java.io.*;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.util.PriorityQueue;
 import java.util.Queue;
+import java.util.function.Function;
 
+//TODO implement task-interface for management of long running tasks
 public class CopyOp
 {
     private static final int BUFFER_SIZE = 4096;
     private static final int FLUSHING_STEP = 5000;
+
+    private Function<AbstractIOObject, AbstractIOObject> PEER_TRANSFORM;//TODO replace by more generalized version
 
     private CopyState state;
 
@@ -35,6 +43,10 @@ public class CopyOp
         this.manager = manager;
         this.state = state;
         this.log = log;
+
+        PEER_TRANSFORM = abstractIOObject -> new FileObject(
+                state.getFileOut() + "/" + abstractIOObject.getName().substring(state.getFileIn().length()),
+                abstractIOObject.isLeave());
     }
 
     public void start()
@@ -74,6 +86,7 @@ public class CopyOp
     @SuppressWarnings("ConstantConditions")
     private void copy()
     {
+        //TODO input-file somehow gets transformed into incorrect sequence?
         try {
             //prepare output directory
             Files.createDirectories(FileSystems.getDefault().getPath(state.getFileOut()));
@@ -88,43 +101,32 @@ public class CopyOp
         }
 
         try {
-            Queue<File> fileQueue = new PriorityQueue<>();
-            fileQueue.offer(new File(state.getFileIn()));
+            IOObjectIterator iter = new IOObjectIterator(new FileObject(state.getFileIn()));
+            while (iter.hasNext() && keepRunning) {
+                AbstractIOObject in = iter.next(),
+                        peer = PEER_TRANSFORM.apply(in);
 
-            String in = state.getFileIn(),
-                    out = state.getFileOut();
+                try {
+                    if (in.isLeave()) {
+                        if (peer.lastAltered().after(in.lastAltered()))
+                            log.reportFileUptoDate(in.getName());
+                        else {
+                            state.setCurrentSource(in.getName());
+                            copyFile(in.getInputStream(), PEER_TRANSFORM.apply(in).getOutputStream());
+                        }
+                    } else {
+                        AbstractIOObject obj = PEER_TRANSFORM.apply(in);
 
-            while(!fileQueue.isEmpty() && keepRunning)
-            {
-                File f = fileQueue.poll();
-
-                File peer = new File(out + "/" + f.getAbsolutePath().substring(in.length()));
-
-                if(f.isDirectory())
-                {
-                    if(!peer.exists() && !peer.mkdir())
-                    {
-                        log.reportCopyError("Failed to create backup directory", f.getAbsolutePath());
-                        continue;
+                        if (!obj.exists())
+                            obj.create();
                     }
-
-                    for(File child : f.listFiles())
-                        fileQueue.offer(child);
-                }
-                else
-                {
-                    //ignore files that are older than their backup version
-                    if(peer.lastModified() > f.lastModified()) {
-                        log.reportFileUptoDate(f);
-                    }
-                    else
-                        copyFile(f, peer);
+                } catch (IOException e) {
+                    log.reportCopyError(e.getMessage(), in.getName());
                 }
             }
-        }catch (Exception e) {
+        }catch (Exception e)
+        {
             log.reportUnknownException(e);
-
-            keepRunning = false;
         }
 
         //notify the manager about completion of the code
@@ -147,33 +149,25 @@ public class CopyOp
         }
     }
 
-    private void copyFile(File in, File out)
+    private void copyFile(InputStream in, OutputStream out)
+        throws IOException
     {
-        state.setCurrentFile(in);
-
-        try(FileInputStream fis = new FileInputStream(in);
-            FileOutputStream fos = new FileOutputStream(out))
+        int index, count = 0;
+        while((index = in.read(buffer)) > 0 && keepRunning)
         {
-            int index, count = 0;
-            while((index = fis.read(buffer)) > 0 && keepRunning)
+            out.write(buffer, 0, index);
+
+            //only flush every FLUSHING_STEP loop (probably outer loop???)
+            if((++count % FLUSHING_STEP) == 0)
             {
-                fos.write(buffer, 0, index);
-
-                //only flush every FLUSHING_STEP loop
-                if((++count % FLUSHING_STEP) == 0)
-                {
-                    fos.flush();
-                    checkPausedState();
-                }
-
-                state.currentFileProgress(index);
+                out.flush();
+                checkPausedState();
             }
 
-            //final flush to make sure the entire io was flushed
-            fos.flush();
-        }catch (IOException e)
-        {
-            log.reportCopyError(e.getMessage(), in.getAbsolutePath());
+            state.currentFileProgress(index);
         }
+
+        //final flush to make sure the entire io was flushed
+        out.flush();
     }
 }

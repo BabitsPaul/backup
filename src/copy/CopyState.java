@@ -1,12 +1,10 @@
 package copy;
 
-import java.io.File;
-
 public class CopyState
 {
     private String fileIn, fileOut;
 
-    private File currentFile;
+    private String currentSource;
     private long currentFileProgress;
     private long currentFileLength;
 
@@ -32,15 +30,15 @@ public class CopyState
         return fileOut;
     }
 
-    public void setCurrentFile(File currentFile) {
-        this.currentFile = currentFile;
-        currentFileLength = currentFile.length();
+    public void setCurrentSource(String currentSource) {
+        this.currentSource = currentSource;
+        currentFileLength = currentSource.length();
         currentFileProgress = 0L;
         totalFileProgress++;
     }
 
-    public File getCurrentFile() {
-        return currentFile;
+    public String getCurrentSource() {
+        return currentSource;
     }
 
     public long getCurrentFileProgress() {

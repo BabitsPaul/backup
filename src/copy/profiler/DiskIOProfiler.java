@@ -81,7 +81,6 @@ public class DiskIOProfiler
     public void terminate()
     {
         t.stop();
-
     }
 
     public JComponent getComponent()
@@ -100,8 +99,8 @@ public class DiskIOProfiler
             diagram.update();
 
             speed.setText(dataPoint.current.toString());
-            time.setText("" + dataPoint.totalTimeRunning.toString());
-            timeRemaining.setText("" + dataPoint.timeRemaining.toString());
+            time.setText(dataPoint.totalTimeRunning.toString());
+            timeRemaining.setText(dataPoint.timeRemaining.toString());
 
             panel.revalidate();
             panel.repaint();

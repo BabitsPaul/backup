@@ -123,7 +123,7 @@ public class SelectorUI
     public void dispose()
     {
         frame.setVisible(false);
-        frame.dispose();
+        frame.dispose();            //TODO shutdown hangs up
     }
 
     public void show()

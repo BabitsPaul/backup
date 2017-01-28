@@ -1,14 +1,12 @@
 package util.io;
 
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.PriorityQueue;
-import java.util.Queue;
+import java.util.*;
 
-public class IOObjectIterator
-    implements Iterator<AbstractIOObject>
+public class IOObjectIterator<T extends AbstractIOObject>
+    implements Iterator<T>
 {
-    public static final IOObjectIterator EMPTY = new IOObjectIterator(null){
+    //TODO allow specialization
+    public static final IOObjectIterator EMPTY = new IOObjectIterator(AbstractIOObject.NONE){
         @Override
         public boolean hasNext() {
             return false;
@@ -20,34 +18,34 @@ public class IOObjectIterator
         }
     };
 
-    private AbstractIOObject base;
+    private T base;
 
     private boolean skipNonLeaves;
 
-    private Queue<AbstractIOObject> queue;
+    private Queue<T> queue;
 
-    public IOObjectIterator(AbstractIOObject base)
+    public IOObjectIterator(T base)
     {
         this(base, false);
     }
 
-    public IOObjectIterator(AbstractIOObject base, boolean skipNonLeaves)
+    public IOObjectIterator(T base, boolean skipNonLeaves)
     {
         this.base = base;
         this.skipNonLeaves = skipNonLeaves;
 
-        this.queue = new PriorityQueue<>();
+        this.queue = new LinkedList<>();
         queue.offer(base);
     }
 
     @Override
     public boolean hasNext()
     {
-        return queue.isEmpty();
+        return !queue.isEmpty();
     }
 
     @Override
-    public AbstractIOObject next()
+    public T next()
     {
         //skip over all values that aren't leaves
         if(skipNonLeaves)
@@ -57,18 +55,24 @@ public class IOObjectIterator
                     break;
                 else
                     for(AbstractIOObject child : queue.poll().listChildren())
-                        queue.offer(child);
+                        queue.offer((T) child); //TODO more elegant approach
 
         }
 
         if(queue.isEmpty())
             throw new NoSuchElementException();
 
-        AbstractIOObject tmp = queue.poll();
+        T tmp = queue.poll();
 
         for(AbstractIOObject child : tmp.listChildren())
-            queue.offer(child);
+            queue.offer((T) child);
 
-        return null;
+        return tmp;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "IOIterator base=" + base + " current=" + queue.peek();
     }
 }

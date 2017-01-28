@@ -34,8 +34,8 @@ public class CopyLog
         list.add(file);
     }
 
-    public void reportFileUptoDate(File f) {
-        uptoDate.add(f.getAbsolutePath());
+    public void reportFileUptoDate(String f) {
+        uptoDate.add(f);
     }
 
     public HashMap<String, LinkedList<String>> getErrorMap() {

@@ -3,6 +3,9 @@ package test;
 import copy.profiler.ProfilerCache;
 import copy.profiler.ProfilerDataPoint;
 import copy.profiler.ProfilerDiagram;
+import util.io.AbstractIOObject;
+import util.io.FileObject;
+import util.io.IOObjectIterator;
 import util.unit.IOSpeed;
 import util.unit.Time;
 import util.unit.TimeUnit;
@@ -17,10 +20,12 @@ public class TestingUtil
     public static void run()
     {
         //decide what to run
-        //testTotal();
+        testTotal();
         //testProfilerDiagramDynamic();
         //testProfilerDiagramStatic();
-        testTime();
+        //testTime();
+        //testIOObjectIterator();
+        //testIOObject();
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -149,5 +154,30 @@ public class TestingUtil
             frame.setLocationRelativeTo(null);
             frame.setVisible(true);
         });
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // util.io                                                                   //
+    //                                                                           //
+    //                                                                           //
+    ///////////////////////////////////////////////////////////////////////////////
+
+    private static void testIOObject()
+    {
+        AbstractIOObject iobj = new FileObject("..");
+        System.out.println(iobj);
+
+        for(AbstractIOObject child : iobj.listChildren())
+            System.out.println(child);
+    }
+
+    private static void testIOObjectIterator()
+    {
+        IOObjectIterator iter = new IOObjectIterator(new FileObject(".."));
+
+        while(iter.hasNext())
+        {
+            System.out.println(iter.next().getName());
+        }
     }
 }

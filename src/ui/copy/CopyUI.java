@@ -77,40 +77,40 @@ public class CopyUI
             statistics.setLayout(new GridLayout(3, 3));
             panel.add(statistics);
 
-            totalFilesLabel = new UpdatableLabel(()->state.isPrecomputationComplete(), "%d/%d files",
-                    ()->state.getTotalFileProgress(), ()->state.getTotalFiles());
+            totalFilesLabel = new UpdatableLabel(state::isPrecomputationComplete, "%d/%d files",
+                    state::getTotalFileProgress, state::getTotalFiles);
             statistics.add(totalFilesLabel);
 
-            totalFilesBar = new UpdatableProgressBar(()->state.isPrecomputationComplete(), ()->state.getTotalFileProgress(),
-                    ()->state.getTotalFiles());
+            totalFilesBar = new UpdatableProgressBar(state::isPrecomputationComplete, state::getTotalFileProgress,
+                    state::getTotalFiles);
             statistics.add(totalFilesBar);
 
-            totalFilesProgress = new PercentProgress(()->state.isPrecomputationComplete(), ()->state.getTotalFileProgress(),
-                                                        ()->state.getTotalFiles());
+            totalFilesProgress = new PercentProgress(state::isPrecomputationComplete, state::getTotalFileProgress,
+                                                        state::getTotalFiles);
             statistics.add(totalFilesProgress);
 
             //bytes
-            totalBytesLabel = new UpdatableLabel(()->state.isPrecomputationComplete(), "%d/%d bytes",
-                    ()->state.getTotalBytesProgress(), ()->state.getTotalBytes());
+            totalBytesLabel = new UpdatableLabel(state::isPrecomputationComplete, "%d/%d bytes",
+                    state::getTotalBytesProgress, state::getTotalBytes);
             statistics.add(totalBytesLabel);
 
-            totalBytesBar = new UpdatableProgressBar(()->state.isPrecomputationComplete(), ()->state.getTotalBytesProgress(),
-                    ()->state.getTotalBytes());
+            totalBytesBar = new UpdatableProgressBar(state::isPrecomputationComplete, state::getTotalBytesProgress,
+                    state::getTotalBytes);
             statistics.add(totalBytesBar);
 
-            totalBytesProgress = new PercentProgress(()->state.isPrecomputationComplete(), ()->state.getTotalBytesProgress(),
-                    ()->state.getTotalBytes());
+            totalBytesProgress = new PercentProgress(state::isPrecomputationComplete, state::getTotalBytesProgress,
+                    state::getTotalBytes);
             statistics.add(totalBytesProgress);
 
             //current io
-            currentFileLabel = new UpdatableLabel(()->true, "%s", ()->state.getCurrentFile());
+            currentFileLabel = new UpdatableLabel(()->true, "%s", state::getCurrentSource);
             statistics.add(currentFileLabel);
             currentFileLabel.setUI(new LeftDotLabelUI());
 
-            currentFileBar = new UpdatableProgressBar(()->true, ()->state.getCurrentFileProgress(), ()->state.getCurrentFileLength());
+            currentFileBar = new UpdatableProgressBar(()->true, state::getCurrentFileProgress, state::getCurrentFileLength);
             statistics.add(currentFileBar);
 
-            currentFileProgress = new PercentProgress(()->true, ()->state.getCurrentFileProgress(), ()->state.getCurrentFileLength());
+            currentFileProgress = new PercentProgress(()->true, state::getCurrentFileProgress, state::getCurrentFileLength);
             statistics.add(currentFileProgress);
 
             //throughput

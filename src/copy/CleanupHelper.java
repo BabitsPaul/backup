@@ -15,6 +15,7 @@ import java.util.*;
  */
 public class CleanupHelper
 {
+    //TODO use IOObjectDiff
     private List<File> toDelete;
 
     private String in, out;

@@ -11,6 +11,7 @@ import java.lang.reflect.InvocationTargetException;
 
 public class ProfilerDiagram
 {
+    //TODO profiler not stopped on termination (evaluate shutdown process)
     private static final int IMAGE_WIDTH = 500;
     private static final int IMAGE_HEIGHT = 200;
 
